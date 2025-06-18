@@ -5,25 +5,6 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 const Dashboard = () => {
-  // Estado para los datos dummy
-  const [dummyData, setDummyData] = useState({
-    expenses: [
-      { id: 1, amount: 150, category: 'Food', date: '2023-05-01' },
-      { id: 2, amount: 200, category: 'Transport', date: '2023-05-02' },
-      { id: 3, amount: 100, category: 'Entertainment', date: '2023-05-03' },
-      { id: 4, amount: 300, category: 'Food', date: '2023-05-04' },
-      { id: 5, amount: 50, category: 'Other', date: '2023-05-05' }
-    ],
-    incomes: [
-      { id: 1, amount: 1000, category: 'Salary', date: '2023-05-01' },
-      { id: 2, amount: 200, category: 'Freelance', date: '2023-05-10' }
-    ],
-    cardPayments: [
-      { id: 1, amount: 150, category: 'Food', date: '2023-05-01' }
-    ]
-  });
-
-  // Estado para los datos calculados
   const [dashboardData, setDashboardData] = useState({
     totals: {
       expense: 0,
@@ -31,107 +12,118 @@ const Dashboard = () => {
       remaining: 0,
       card: 0
     },
-    categories: []
+    categories: [],
+    loading: true,
+    error: null
   });
 
-  // Calcular totales y categorías
-  useEffect(() => {
-    const totalExpense = dummyData.expenses.reduce((sum, item) => sum + item.amount, 0);
-    const totalIncome = dummyData.incomes.reduce((sum, item) => sum + item.amount, 0);
-    const totalCard = dummyData.cardPayments.reduce((sum, item) => sum + item.amount, 0);
-    const remainingCash = totalIncome - totalExpense;
-
-    // Agrupar por categoría
-    const categoryMap = {};
-    dummyData.expenses.forEach(expense => {
-      categoryMap[expense.category] = (categoryMap[expense.category] || 0) + expense.amount;
-    });
-
-    setDashboardData({
-      totals: {
-        expense: totalExpense,
-        income: totalIncome,
-        remaining: remainingCash,
-        card: totalCard
-      },
-      categories: Object.keys(categoryMap).map(category => ({
-        name: category,
-        value: categoryMap[category]
-      }))
-    });
-  }, [dummyData]);
-
-  // Función para agregar transacción
-  const addTransaction = (type, transaction) => {
-    setDummyData(prev => ({
-      ...prev,
-      [type]: [...prev[type], {
-        ...transaction,
-        id: prev[type].length + 1,
-        date: new Date().toISOString().split('T')[0]
-      }]
-    }));
+  // Función para formatear números con separadores de miles
+  const formatNumber = (numStr) => {
+    return parseFloat(numStr.replace(/\./g, '').replace(',', '.'));
   };
+
+  // Función para obtener los datos del endpoint
+  const fetchExpensesData = async () => {
+    try {
+      const response = await fetch('http://192.168.1.11:8000/expenses/2025/6');
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      
+      // Procesar los datos para el dashboard
+      const totalExpense = formatNumber(data.expenses.total);
+      const categories = Object.entries(data.expenses.total_by_expense_type).map(([name, value]) => ({
+        name,
+        value: formatNumber(value)
+      }));
+
+      setDashboardData({
+        totals: {
+          expense: totalExpense,
+          income: 0, // Puedes obtener esto de otro endpoint si es necesario
+          remaining: -totalExpense, // Asumiendo que no hay ingresos en este ejemplo
+          card: 0 // Puedes obtener esto de otro endpoint si es necesario
+        },
+        categories,
+        loading: false,
+        error: null
+      });
+    } catch (error) {
+      setDashboardData(prev => ({
+        ...prev,
+        loading: false,
+        error: error.message
+      }));
+    }
+  };
+
+  useEffect(() => {
+    fetchExpensesData();
+  }, []);
+
+  if (dashboardData.loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
+        <div className="text-xl font-semibold text-gray-700">Cargando datos...</div>
+      </div>
+    );
+  }
+
+  if (dashboardData.error) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
+        <div className="text-xl font-semibold text-red-600">Error: {dashboardData.error}</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-800 mb-8">Finance Dashboard</h1>
+        <h1 className="text-3xl font-bold text-gray-800 mb-8">Resumen de Gastos - Junio 2025</h1>
         
         {/* Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card 
-            title="Total Income" 
-            value={dashboardData.totals.income} 
-            icon="💰" 
-            color="green"
-          />
-          <Card 
-            title="Total Expense" 
+            title="Total Gastos" 
             value={dashboardData.totals.expense} 
             icon="💸" 
             color="red"
           />
           <Card 
-            title="Remaining Cash" 
+            title="Total Ingresos" 
+            value={dashboardData.totals.income} 
+            icon="💰" 
+            color="green"
+          />
+          <Card 
+            title="Balance" 
             value={dashboardData.totals.remaining} 
             icon="🏦" 
             color={dashboardData.totals.remaining >= 0 ? 'blue' : 'orange'}
           />
           <Card 
-            title="Card Payments" 
+            title="Pagos con Tarjeta" 
             value={dashboardData.totals.card} 
             icon="💳" 
             color="purple"
           />
         </div>
         
-        {/* Charts Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-          <div className="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm">
-            <h2 className="text-xl font-semibold text-gray-700 mb-4">Expense Distribution</h2>
-            <div className="h-80">
-              <DoughnutChart data={dashboardData.categories} />
-            </div>
+        {/* Chart Section */}
+        <div className="bg-white p-6 rounded-xl shadow-sm mb-8">
+          <h2 className="text-xl font-semibold text-gray-700 mb-4">Distribución de Gastos por Categoría</h2>
+          <div className="h-96">
+            <DoughnutChart data={dashboardData.categories} />
           </div>
-          
-          <div className="bg-white p-6 rounded-xl shadow-sm">
-            <h2 className="text-xl font-semibold text-gray-700 mb-4">Recent Transactions</h2>
-            <TransactionList transactions={[...dummyData.expenses, ...dummyData.incomes].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5)} />
-          </div>
-        </div>
-        
-        {/* Add Transaction Form */}
-        <div className="bg-white p-6 rounded-xl shadow-sm">
-          <h2 className="text-xl font-semibold text-gray-700 mb-4">Add Transaction</h2>
-          <TransactionForm onSubmit={addTransaction} />
         </div>
       </div>
     </div>
   );
 };
 
-// Componente Card mejorado con Tailwind
+// Componente Card (mejorado para mostrar números formateados)
 const Card = ({ title, value, icon, color }) => {
   const colorClasses = {
     green: 'bg-green-50 border-green-200 text-green-800',
@@ -141,31 +133,47 @@ const Card = ({ title, value, icon, color }) => {
     purple: 'bg-purple-50 border-purple-200 text-purple-800'
   };
 
+  // Función para formatear el valor como moneda
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('es-AR', {
+      style: 'currency',
+      currency: 'ARS',
+      minimumFractionDigits: 2
+    }).format(value);
+  };
+
   return (
     <div className={`${colorClasses[color]} p-5 rounded-lg border flex items-center justify-between`}>
       <div>
         <p className="text-sm font-medium text-gray-500">{title}</p>
-        <p className="text-2xl font-bold mt-1">${value.toLocaleString()}</p>
+        <p className="text-2xl font-bold mt-1">{formatCurrency(value)}</p>
       </div>
       <span className="text-3xl">{icon}</span>
     </div>
   );
 };
 
-// Componente DoughnutChart
+// Componente DoughnutChart (actualizado)
 const DoughnutChart = ({ data }) => {
+  // Ordenar categorías de mayor a menor
+  const sortedData = [...data].sort((a, b) => b.value - a.value);
+
   const chartData = {
-    labels: data.map(item => item.name),
+    labels: sortedData.map(item => item.name),
     datasets: [
       {
-        data: data.map(item => item.value),
+        data: sortedData.map(item => item.value),
         backgroundColor: [
           '#EF4444', // red-500
           '#3B82F6', // blue-500
           '#F59E0B', // amber-500
           '#10B981', // emerald-500
           '#8B5CF6', // violet-500
-          '#EC4899'  // pink-500
+          '#EC4899', // pink-500
+          '#84CC16', // lime-500
+          '#F97316', // orange-500
+          '#06B6D4', // cyan-500
+          '#A855F7'  // purple-500
         ],
         borderWidth: 0
       }
@@ -178,112 +186,29 @@ const DoughnutChart = ({ data }) => {
         position: 'right',
         labels: {
           usePointStyle: true,
-          padding: 20
+          padding: 20,
+          font: {
+            size: 12
+          }
+        }
+      },
+      tooltip: {
+        callbacks: {
+          label: function(context) {
+            const label = context.label || '';
+            const value = context.raw || 0;
+            const total = context.dataset.data.reduce((acc, data) => acc + data, 0);
+            const percentage = Math.round((value / total) * 100);
+            return `${label}: $${value.toLocaleString('es-AR')} (${percentage}%)`;
+          }
         }
       }
     },
-    cutout: '70%',
+    cutout: '65%',
     maintainAspectRatio: false
   };
 
   return <Doughnut data={chartData} options={options} />;
-};
-
-// Componente TransactionList
-const TransactionList = ({ transactions }) => {
-  return (
-    <div className="space-y-4">
-      {transactions.map(transaction => (
-        <div key={transaction.id} className="flex justify-between items-center p-3 hover:bg-gray-50 rounded-lg">
-          <div className="flex items-center">
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-              transaction.amount > 0 ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
-            }`}>
-              {transaction.amount > 0 ? '⬆️' : '⬇️'}
-            </div>
-            <div className="ml-3">
-              <p className="font-medium text-gray-800">{transaction.category}</p>
-              <p className="text-sm text-gray-500">{transaction.date}</p>
-            </div>
-          </div>
-          <p className={`font-semibold ${
-            transaction.amount > 0 ? 'text-green-600' : 'text-red-600'
-          }`}>
-            {transaction.amount > 0 ? '+' : ''}{transaction.amount}
-          </p>
-        </div>
-      ))}
-    </div>
-  );
-};
-
-// Componente TransactionForm mejorado
-const TransactionForm = ({ onSubmit }) => {
-  const [type, setType] = useState('expenses');
-  const [amount, setAmount] = useState('');
-  const [category, setCategory] = useState('');
-  
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!amount || !category) return;
-    
-    onSubmit(type, { amount: Number(amount), category });
-    setAmount('');
-    setCategory('');
-  };
-  
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div>
-          <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">Type</label>
-          <select
-            id="type"
-            value={type}
-            onChange={(e) => setType(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value="expenses">Expense</option>
-            <option value="incomes">Income</option>
-            <option value="cardPayments">Card Payment</option>
-          </select>
-        </div>
-        
-        <div>
-          <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-1">Amount</label>
-          <input
-            id="amount"
-            type="number"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            placeholder="0.00"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            required
-          />
-        </div>
-        
-        <div>
-          <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-          <input
-            id="category"
-            type="text"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            placeholder="Category"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            required
-          />
-        </div>
-      </div>
-      
-      <button
-        type="submit"
-        className="w-full md:w-auto px-4 py-2 bg-blue-600 text-white font-medium rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-      >
-        Add Transaction
-      </button>
-    </form>
-  );
 };
 
 export default Dashboard;
