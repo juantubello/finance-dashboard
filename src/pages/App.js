@@ -1,9 +1,10 @@
 import React from 'react';
+import Dashboard from '../components/Dashboard'; // Esto busca en src/components/Dashboard
 
 function App() {
-  return (
-    <div style={{ textAlign: 'center', marginTop: '50px' }}>
-      <h1>Hola Mundo2</h1>
+   return (
+    <div className="App">
+      <Dashboard />
     </div>
   );
 }
