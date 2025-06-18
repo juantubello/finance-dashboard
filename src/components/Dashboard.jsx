@@ -4,145 +4,6 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-const Dashboard = () => {
-  const [dashboardData, setDashboardData] = useState({
-    totals: {
-      expense: 0,
-      income: 0,
-      remaining: 0,
-      card: 0
-    },
-    categories: [],
-    loading: true,
-    error: null
-  });
-
-  const formatCurrency = (value) => {
-    return new Intl.NumberFormat('es-AR', {
-      style: 'currency',
-      currency: 'ARS',
-      minimumFractionDigits: 2
-    }).format(value);
-  };
-
-  const [isMobile, setIsMobile] = useState(false);
-  const [showGraph, setShowGraph] = useState(false);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  const fetchExpensesData = async () => {
-    try {
-      const expensesResponse = await fetch('http://192.168.1.11:8000/expenses/2025/6');
-      if (!expensesResponse.ok) throw new Error('Network response was not ok');
-      
-      const expensesData = await expensesResponse.json();
-      const totalExpense = parseFloat(expensesData.expenses.total.replace(/\./g, '').replace(',', '.'));
-      const categories = Object.entries(expensesData.expenses.total_by_expense_type).map(([name, value]) => ({
-        name,
-        value: parseFloat(value.replace(/\./g, '').replace(',', '.'))
-      }));
-
-      const incomeResponse = await fetch('http://192.168.1.11:8000/incomes/2025/6');
-      if (!incomeResponse.ok) throw new Error('Network response was not ok');
-      const incomeData = await incomeResponse.json();
-      const totalIncome = parseFloat(incomeData.income.total_ars.replace(/\./g, '').replace(',', '.'));
-
-      setDashboardData({
-        totals: {
-          expense: totalExpense,
-          income: totalIncome,
-          remaining: -totalExpense,
-          card: 0
-        },
-        categories,
-        loading: false,
-        error: null
-      });
-    } catch (error) {
-      setDashboardData(prev => ({
-        ...prev,
-        loading: false,
-        error: error.message
-      }));
-    }
-  };
-
-  useEffect(() => {
-    fetchExpensesData();
-  }, []);
-
-  if (dashboardData.loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
-        <div className="text-xl font-semibold text-gray-700">Cargando datos...</div>
-      </div>
-    );
-  }
-
-  if (dashboardData.error) {
-    return (
-      <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
-        <div className="text-xl font-semibold text-red-600">Error: {dashboardData.error}</div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-800 mb-8">Resumen de Gastos - Junio 2025</h1>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <Card 
-            title="Balance" 
-            value={dashboardData.totals.remaining} 
-            icon="🏦" 
-            color={dashboardData.totals.remaining >= 0 ? 'blue' : 'orange'}
-          />
-          <Card 
-            title="Gastos en efectivo / debito" 
-            value={dashboardData.totals.expense} 
-            icon="💸" 
-            color="red"
-          />
-          <Card 
-            title="Ingreso" 
-            value={dashboardData.totals.income} 
-            icon="💰" 
-            color="green"
-          />
-          <Card 
-            title="Total resumen tarjetas" 
-            value={dashboardData.totals.card} 
-            icon="💳" 
-            color="purple"
-          />
-        </div>
-        
-        <div className="bg-white p-6 rounded-xl shadow-sm mb-8">
-          <h2 className="text-xl font-semibold text-gray-700 mb-4">Gastos en efectivo / debito</h2>
-          <div className="h-96">
-            <DoughnutChart 
-              data={dashboardData.categories} 
-              isMobile={isMobile}
-              showGraph={showGraph}
-              setShowGraph={setShowGraph}
-            />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 const Card = ({ title, value, icon, color }) => {
   const colorClasses = {
     green: 'bg-green-50 border-green-200 text-green-800',
@@ -332,6 +193,211 @@ const DoughnutChart = ({ data, isMobile, showGraph, setShowGraph }) => {
   };
 
   return <Doughnut data={chartData} options={options} />;
+};
+
+const Dashboard = () => {
+  const [dashboardData, setDashboardData] = useState({
+    totals: {
+      expense: 0,
+      income: 0,
+      remaining: 0,
+      card: 0
+    },
+    categories: [],
+    loading: true,
+    error: null
+  });
+
+  const [filters, setFilters] = useState({
+    selectedYear: new Date().getFullYear(),
+    selectedMonth: new Date().getMonth() + 1
+  });
+
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('es-AR', {
+      style: 'currency',
+      currency: 'ARS',
+      minimumFractionDigits: 2
+    }).format(value);
+  };
+
+  const [isMobile, setIsMobile] = useState(false);
+  const [showGraph, setShowGraph] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const retrieveFilters = () => {
+    return {
+      selectedYear: filters.selectedYear,
+      selectedMonth: filters.selectedMonth
+    };
+  };
+
+  const fetchExpensesData = async () => {
+    try {
+      const { selectedYear, selectedMonth } = retrieveFilters();
+      const expensesResponse = await fetch(`http://192.168.1.11:8000/expenses/${selectedYear}/${selectedMonth}`);
+      if (!expensesResponse.ok) throw new Error('Network response was not ok');
+      
+      const expensesData = await expensesResponse.json();
+      const totalExpense = parseFloat(expensesData.expenses.total.replace(/\./g, '').replace(',', '.'));
+      const categories = Object.entries(expensesData.expenses.total_by_expense_type).map(([name, value]) => ({
+        name,
+        value: parseFloat(value.replace(/\./g, '').replace(',', '.'))
+      }));
+
+      const incomeResponse = await fetch(`http://192.168.1.11:8000/incomes/${selectedYear}/${selectedMonth}`);
+      if (!incomeResponse.ok) throw new Error('Network response was not ok');
+      const incomeData = await incomeResponse.json();
+      const totalIncome = parseFloat(incomeData.income.total_ars.replace(/\./g, '').replace(',', '.'));
+
+      setDashboardData({
+        totals: {
+          expense: totalExpense,
+          income: totalIncome,
+          remaining: totalIncome - totalExpense,
+          card: 0
+        },
+        categories,
+        loading: false,
+        error: null
+      });
+    } catch (error) {
+      setDashboardData(prev => ({
+        ...prev,
+        loading: false,
+        error: error.message
+      }));
+    }
+  };
+
+  useEffect(() => {
+    fetchExpensesData();
+  }, [filters]);
+
+  if (dashboardData.loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center pt-24">
+        <div className="text-xl font-semibold text-gray-700">Cargando datos...</div>
+      </div>
+    );
+  }
+
+  if (dashboardData.error) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center pt-24">
+        <div className="text-xl font-semibold text-red-600">Error: {dashboardData.error}</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Fixed Navbar */}
+      <div className="bg-gray-700 shadow-md w-full py-3 px-6 fixed top-0 z-50">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          {/* Logo */}
+          <div className="flex items-center">
+            <div className="bg-gray-800 rounded-lg p-2 mr-3">
+              <h1 className="text-xl font-bold text-white">FP</h1>
+            </div>
+          </div>
+          
+          {/* Filters */}
+          <div className="flex items-center space-x-4">
+            <div className="relative">
+              <select
+                value={filters.selectedMonth}
+                onChange={(e) => setFilters({...filters, selectedMonth: parseInt(e.target.value)})}
+                className="appearance-none bg-gray-600 text-white border border-gray-500 rounded-lg px-4 py-1 pr-8 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                {Array.from({length: 12}, (_, i) => i + 1).map(month => (
+                  <option key={month} value={month} className="bg-gray-700">
+                    {new Date(2000, month - 1, 1).toLocaleString('es-AR', {month: 'long'})}
+                  </option>
+                ))}
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-300">
+                <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                  <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+                </svg>
+              </div>
+            </div>
+            
+            <div className="relative">
+              <select
+                value={filters.selectedYear}
+                onChange={(e) => setFilters({...filters, selectedYear: parseInt(e.target.value)})}
+                className="appearance-none bg-gray-600 text-white border border-gray-500 rounded-lg px-4 py-1 pr-8 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                {Array.from({length: 5}, (_, i) => new Date().getFullYear() - 2 + i).map(year => (
+                  <option key={year} value={year} className="bg-gray-700">{year}</option>
+                ))}
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-300">
+                <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                  <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+          
+          {/* Empty div for balance */}
+          <div className="w-24"></div>
+        </div>
+      </div>
+
+      {/* Main Content with padding-top to account for fixed navbar */}
+      <div className="max-w-7xl mx-auto p-6 pt-24">  
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <Card 
+            title="Balance" 
+            value={dashboardData.totals.remaining} 
+            icon="🏦" 
+            color={dashboardData.totals.remaining >= 0 ? 'blue' : 'orange'}
+          />
+          <Card 
+            title="Gastos en efectivo / debito" 
+            value={dashboardData.totals.expense} 
+            icon="💸" 
+            color="red"
+          />
+          <Card 
+            title="Ingreso" 
+            value={dashboardData.totals.income} 
+            icon="💰" 
+            color="green"
+          />
+          <Card 
+            title="Total resumen tarjetas" 
+            value={dashboardData.totals.card} 
+            icon="💳" 
+            color="purple"
+          />
+        </div>
+        
+        <div className="bg-white p-6 rounded-xl shadow-sm mb-8">
+          <h2 className="text-xl font-semibold text-gray-700 mb-4">Gastos en efectivo / debito</h2>
+          <div className="h-96">
+            <DoughnutChart 
+              data={dashboardData.categories} 
+              isMobile={isMobile}
+              showGraph={showGraph}
+              setShowGraph={setShowGraph}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default Dashboard;
