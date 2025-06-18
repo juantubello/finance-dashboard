@@ -17,33 +17,45 @@ const Dashboard = () => {
     error: null
   });
 
-  // Función para formatear números con separadores de miles
-  const formatNumber = (numStr) => {
-    return parseFloat(numStr.replace(/\./g, '').replace(',', '.'));
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('es-AR', {
+      style: 'currency',
+      currency: 'ARS',
+      minimumFractionDigits: 2
+    }).format(value);
   };
 
-  // Función para obtener los datos del endpoint
+  const [isMobile, setIsMobile] = useState(false);
+  const [showGraph, setShowGraph] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const fetchExpensesData = async () => {
     try {
       const response = await fetch('http://192.168.1.11:8000/expenses/2025/6');
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      const data = await response.json();
+      if (!response.ok) throw new Error('Network response was not ok');
       
-      // Procesar los datos para el dashboard
-      const totalExpense = formatNumber(data.expenses.total);
+      const data = await response.json();
+      const totalExpense = parseFloat(data.expenses.total.replace(/\./g, '').replace(',', '.'));
       const categories = Object.entries(data.expenses.total_by_expense_type).map(([name, value]) => ({
         name,
-        value: formatNumber(value)
+        value: parseFloat(value.replace(/\./g, '').replace(',', '.'))
       }));
 
       setDashboardData({
         totals: {
           expense: totalExpense,
-          income: 0, // Puedes obtener esto de otro endpoint si es necesario
-          remaining: -totalExpense, // Asumiendo que no hay ingresos en este ejemplo
-          card: 0 // Puedes obtener esto de otro endpoint si es necesario
+          income: 0,
+          remaining: -totalExpense,
+          card: 0
         },
         categories,
         loading: false,
@@ -83,39 +95,42 @@ const Dashboard = () => {
       <div className="max-w-7xl mx-auto">
         <h1 className="text-3xl font-bold text-gray-800 mb-8">Resumen de Gastos - Junio 2025</h1>
         
-        {/* Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card 
-            title="Total Gastos" 
-            value={dashboardData.totals.expense} 
-            icon="💸" 
-            color="red"
-          />
-          <Card 
-            title="Total Ingresos" 
-            value={dashboardData.totals.income} 
-            icon="💰" 
-            color="green"
-          />
-          <Card 
+            <Card 
             title="Balance" 
             value={dashboardData.totals.remaining} 
             icon="🏦" 
             color={dashboardData.totals.remaining >= 0 ? 'blue' : 'orange'}
           />
           <Card 
-            title="Pagos con Tarjeta" 
+            title="Gastos en efectivo / debito" 
+            value={dashboardData.totals.expense} 
+            icon="💸" 
+            color="red"
+          />
+          <Card 
+            title="Ingreso" 
+            value={dashboardData.totals.income} 
+            icon="💰" 
+            color="green"
+          />
+          <Card 
+            title="Total resumen tarjetas" 
             value={dashboardData.totals.card} 
             icon="💳" 
             color="purple"
           />
         </div>
         
-        {/* Chart Section */}
         <div className="bg-white p-6 rounded-xl shadow-sm mb-8">
-          <h2 className="text-xl font-semibold text-gray-700 mb-4">Distribución de Gastos por Categoría</h2>
+          <h2 className="text-xl font-semibold text-gray-700 mb-4">Gastos en efectivo / debito</h2>
           <div className="h-96">
-            <DoughnutChart data={dashboardData.categories} />
+            <DoughnutChart 
+              data={dashboardData.categories} 
+              isMobile={isMobile}
+              showGraph={showGraph}
+              setShowGraph={setShowGraph}
+            />
           </div>
         </div>
       </div>
@@ -123,7 +138,6 @@ const Dashboard = () => {
   );
 };
 
-// Componente Card (mejorado para mostrar números formateados)
 const Card = ({ title, value, icon, color }) => {
   const colorClasses = {
     green: 'bg-green-50 border-green-200 text-green-800',
@@ -133,7 +147,6 @@ const Card = ({ title, value, icon, color }) => {
     purple: 'bg-purple-50 border-purple-200 text-purple-800'
   };
 
-  // Función para formatear el valor como moneda
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('es-AR', {
       style: 'currency',
@@ -153,59 +166,164 @@ const Card = ({ title, value, icon, color }) => {
   );
 };
 
-// Componente DoughnutChart (actualizado)
-const DoughnutChart = ({ data }) => {
-  // Ordenar categorías de mayor a menor
+const DoughnutChart = ({ data, isMobile, showGraph, setShowGraph }) => {
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('es-AR', {
+      style: 'currency',
+      currency: 'ARS',
+      minimumFractionDigits: 2
+    }).format(value);
+  };
+
   const sortedData = [...data].sort((a, b) => b.value - a.value);
+  const total = sortedData.reduce((sum, item) => sum + item.value, 0);
 
   const chartData = {
     labels: sortedData.map(item => item.name),
-    datasets: [
-      {
-        data: sortedData.map(item => item.value),
-        backgroundColor: [
-          '#EF4444', // red-500
-          '#3B82F6', // blue-500
-          '#F59E0B', // amber-500
-          '#10B981', // emerald-500
-          '#8B5CF6', // violet-500
-          '#EC4899', // pink-500
-          '#84CC16', // lime-500
-          '#F97316', // orange-500
-          '#06B6D4', // cyan-500
-          '#A855F7'  // purple-500
-        ],
-        borderWidth: 0
-      }
-    ]
+    datasets: [{
+      data: sortedData.map(item => item.value),
+      backgroundColor: [
+        '#EF4444', '#3B82F6', '#F59E0B', '#10B981', '#37353d',
+        '#EC4899', '#84CC16', '#F97316', '#06B6D4', '#A855F7',
+        '#E1F755'
+      ],
+      borderWidth: 1,
+      borderColor: '#fff',
+      hoverOffset: 10
+    }]
   };
 
+  if (isMobile) {
+    return (
+      <div className="w-full bg-white rounded-xl p-4">
+        {showGraph ? (
+          <>
+            <button 
+              onClick={() => setShowGraph(false)}
+              className="flex items-center text-blue-600 mb-2 text-sm"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 rotate-180" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+              Ver lista
+            </button>
+            <div className="h-64 flex justify-center items-center">
+              <div className="w-full max-w-[300px]">
+                <Doughnut 
+                  data={chartData}
+                  options={{
+                    plugins: {
+                      legend: {
+                        display: true,
+                        position: 'bottom',
+                        labels: {
+                          usePointStyle: true,
+                          padding: 10,
+                          boxWidth: 8,
+                          font: { size: 10 },
+                          generateLabels: (chart) => {
+                            return chart.data.labels.map((label, i) => ({
+                              text: label,
+                              fillStyle: chartData.datasets[0].backgroundColor[i],
+                              hidden: false,
+                              index: i
+                            }));
+                          }
+                        }
+                      },
+                      tooltip: {
+                        callbacks: {
+                          label: (context) => {
+                            const label = context.label || '';
+                            const value = context.raw || 0;
+                            const percentage = Math.round((value / total) * 100);
+                            return `${label}: ${formatCurrency(value)} (${percentage}%)`;
+                          }
+                        }
+                      }
+                    },
+                    cutout: '50%',
+                    maintainAspectRatio: true
+                  }}
+                />
+              </div>
+            </div>
+          </>
+        ) : (
+          <>
+            <button 
+              onClick={() => setShowGraph(true)}
+              className="flex items-center justify-end w-full text-blue-600 mb-2 text-sm"
+            >
+              Ver gráfico
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+            </button>
+            <ul className="space-y-2">
+              {sortedData.map((item, index) => {
+                const percentage = Math.round((item.value / total) * 100);
+                return (
+                  <li key={index} className="flex items-center">
+                    <span 
+                      className="inline-block w-3 h-3 rounded-full mr-2"
+                      style={{
+                        backgroundColor: chartData.datasets[0].backgroundColor[index % 11]
+                      }}
+                    ></span>
+                    <span className="text-sm">
+                      {item.name}: {formatCurrency(item.value)} ({percentage}%)
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          </>
+        )}
+      </div>
+    );
+  }
+
+  // Desktop view
   const options = {
     plugins: {
       legend: {
+        display: true,
         position: 'right',
         labels: {
           usePointStyle: true,
-          padding: 20,
-          font: {
-            size: 12
+          padding: 12,
+          boxWidth: 12,
+          font: { size: 13 },
+          generateLabels: (chart) => {
+            return chart.data.labels.map((label, i) => {
+              const value = chart.data.datasets[0].data[i];
+              const percentage = Math.round((value / total) * 100);
+              return {
+                text: `${label}: ${formatCurrency(value)} (${percentage}%)`,
+                fillStyle: chartData.datasets[0].backgroundColor[i],
+                hidden: false,
+                index: i
+              };
+            });
           }
         }
       },
       tooltip: {
+        enabled: true,
         callbacks: {
-          label: function(context) {
+          label: (context) => {
             const label = context.label || '';
             const value = context.raw || 0;
-            const total = context.dataset.data.reduce((acc, data) => acc + data, 0);
             const percentage = Math.round((value / total) * 100);
-            return `${label}: $${value.toLocaleString('es-AR')} (${percentage}%)`;
+            return `${label}: ${formatCurrency(value)} (${percentage}%)`;
           }
         }
       }
     },
     cutout: '65%',
-    maintainAspectRatio: false
+    maintainAspectRatio: false,
+    responsive: true
   };
 
   return <Doughnut data={chartData} options={options} />;
