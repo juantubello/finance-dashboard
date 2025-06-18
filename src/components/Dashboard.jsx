@@ -40,20 +40,25 @@ const Dashboard = () => {
 
   const fetchExpensesData = async () => {
     try {
-      const response = await fetch('http://192.168.1.11:8000/expenses/2025/6');
-      if (!response.ok) throw new Error('Network response was not ok');
+      const expensesResponse = await fetch('http://192.168.1.11:8000/expenses/2025/6');
+      if (!expensesResponse.ok) throw new Error('Network response was not ok');
       
-      const data = await response.json();
-      const totalExpense = parseFloat(data.expenses.total.replace(/\./g, '').replace(',', '.'));
-      const categories = Object.entries(data.expenses.total_by_expense_type).map(([name, value]) => ({
+      const expensesData = await expensesResponse.json();
+      const totalExpense = parseFloat(expensesData.expenses.total.replace(/\./g, '').replace(',', '.'));
+      const categories = Object.entries(expensesData.expenses.total_by_expense_type).map(([name, value]) => ({
         name,
         value: parseFloat(value.replace(/\./g, '').replace(',', '.'))
       }));
 
+      const incomeResponse = await fetch('http://192.168.1.11:8000/incomes/2025/6');
+      if (!incomeResponse.ok) throw new Error('Network response was not ok');
+      const incomeData = await incomeResponse.json();
+      const totalIncome = parseFloat(incomeData.income.total_ars.replace(/\./g, '').replace(',', '.'));
+
       setDashboardData({
         totals: {
           expense: totalExpense,
-          income: 0,
+          income: totalIncome,
           remaining: -totalExpense,
           card: 0
         },
