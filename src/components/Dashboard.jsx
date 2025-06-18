@@ -223,6 +223,8 @@ const Dashboard = () => {
 
   const [isMobile, setIsMobile] = useState(false);
   const [showGraph, setShowGraph] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [activeNavItem, setActiveNavItem] = useState('Reporte mensual');
 
   useEffect(() => {
     const handleResize = () => {
@@ -299,16 +301,20 @@ const Dashboard = () => {
     );
   }
 
+  const navItems = [
+    { name: 'Reporte mensual', icon: '📊' },
+    { name: 'Reporte anual', icon: '📅' },
+    { name: 'Sincronizar datos', icon: '🔄' }
+  ];
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Fixed Navbar */}
       <div className="bg-gray-700 shadow-md w-full py-3 px-6 fixed top-0 z-50">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          {/* Logo */}
-          <div className="flex items-center">
-            <div className="bg-gray-800 rounded-lg p-2 mr-3">
-              <h1 className="text-xl font-bold text-white">FP</h1>
-            </div>
+          {/* FP icon on left */}
+          <div className="bg-gray-800 rounded-lg p-2">
+            <h1 className="text-xl font-bold text-white">FP</h1>
           </div>
           
           {/* Filters */}
@@ -350,51 +356,106 @@ const Dashboard = () => {
             </div>
           </div>
           
-          {/* Empty div for balance */}
-          <div className="w-24"></div>
+          {/* Hamburger menu on right */}
+          <button 
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="text-white focus:outline-none"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
         </div>
       </div>
 
+      {/* Sidebar - Now opens from right */}
+      <div className={`fixed top-0 right-0 h-full w-64 bg-gray-800 text-white z-40 transform ${sidebarOpen ? 'translate-x-0' : 'translate-x-full'} transition-transform duration-300 ease-in-out pt-16`}>
+        <div className="p-4">
+          <ul className="space-y-2">
+            {navItems.map((item) => (
+              <li key={item.name}>
+                <button
+                  onClick={() => {
+                    setActiveNavItem(item.name);
+                    setSidebarOpen(false);
+                  }}
+                  className={`w-full text-left px-4 py-2 rounded-lg flex items-center ${activeNavItem === item.name ? 'bg-gray-700' : 'hover:bg-gray-700'}`}
+                >
+                  <span className="mr-3">{item.icon}</span>
+                  {item.name}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      {/* Overlay for sidebar - now matches right position */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-30"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Main Content with padding-top to account for fixed navbar */}
       <div className="max-w-7xl mx-auto p-6 pt-24">  
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card 
-            title="Balance" 
-            value={dashboardData.totals.remaining} 
-            icon="🏦" 
-            color={dashboardData.totals.remaining >= 0 ? 'blue' : 'orange'}
-          />
-          <Card 
-            title="Gastos en efectivo / debito" 
-            value={dashboardData.totals.expense} 
-            icon="💸" 
-            color="red"
-          />
-          <Card 
-            title="Ingreso" 
-            value={dashboardData.totals.income} 
-            icon="💰" 
-            color="green"
-          />
-          <Card 
-            title="Total resumen tarjetas" 
-            value={dashboardData.totals.card} 
-            icon="💳" 
-            color="purple"
-          />
-        </div>
+        {activeNavItem === 'Reporte mensual' && (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              <Card 
+                title="Balance" 
+                value={dashboardData.totals.remaining} 
+                icon="🏦" 
+                color={dashboardData.totals.remaining >= 0 ? 'blue' : 'orange'}
+              />
+              <Card 
+                title="Gastos en efectivo / debito" 
+                value={dashboardData.totals.expense} 
+                icon="💸" 
+                color="red"
+              />
+              <Card 
+                title="Ingreso" 
+                value={dashboardData.totals.income} 
+                icon="💰" 
+                color="green"
+              />
+              <Card 
+                title="Total resumen tarjetas" 
+                value={dashboardData.totals.card} 
+                icon="💳" 
+                color="purple"
+              />
+            </div>
+            
+            <div className="bg-white p-6 rounded-xl shadow-sm mb-8">
+              <h2 className="text-xl font-semibold text-gray-700 mb-4">Gastos en efectivo / debito</h2>
+              <div className="h-96">
+                <DoughnutChart 
+                  data={dashboardData.categories} 
+                  isMobile={isMobile}
+                  showGraph={showGraph}
+                  setShowGraph={setShowGraph}
+                />
+              </div>
+            </div>
+          </>
+        )}
         
-        <div className="bg-white p-6 rounded-xl shadow-sm mb-8">
-          <h2 className="text-xl font-semibold text-gray-700 mb-4">Gastos en efectivo / debito</h2>
-          <div className="h-96">
-            <DoughnutChart 
-              data={dashboardData.categories} 
-              isMobile={isMobile}
-              showGraph={showGraph}
-              setShowGraph={setShowGraph}
-            />
+        {activeNavItem === 'Reporte anual' && (
+          <div className="bg-white p-6 rounded-xl shadow-sm mb-8">
+            <h2 className="text-xl font-semibold text-gray-700 mb-4">Reporte anual</h2>
+            <p className="text-gray-600">Algun diaaa jijiji</p>
           </div>
-        </div>
+        )}
+        
+        {activeNavItem === 'Sincronizar datos' && (
+          <div className="bg-white p-6 rounded-xl shadow-sm mb-8">
+            <h2 className="text-xl font-semibold text-gray-700 mb-4">Sincronizar datos</h2>
+            <p className="text-gray-600">tengo que hacerlo me da paja ahora</p>
+          </div>
+        )}
       </div>
     </div>
   );
