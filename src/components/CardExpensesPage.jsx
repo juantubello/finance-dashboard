@@ -70,11 +70,14 @@ const CardExpensesPage = () => {
         // Initialize all holders as collapsed by default
         const initialExpandedState = {};
         ['visa', 'mastercard'].forEach((cardType) => {
-          cardData[cardType]?.cards?.forEach((card, cardIndex) => {
-            card.holders.forEach((holder, holderIndex) => {
-              initialExpandedState[`${cardType}-${cardIndex}-${holderIndex}`] = false;
+          if (visaData?.cards || mastercardData?.cards) {
+            const data = cardType === 'visa' ? visaData : mastercardData;
+            data?.cards?.forEach((card, cardIndex) => {
+              card.holders.forEach((holder, holderIndex) => {
+                initialExpandedState[`${cardType}-${cardIndex}-${holderIndex}`] = false;
+              });
             });
-          });
+          }
         });
         setExpandedHolders(initialExpandedState);
       } catch (error) {
@@ -144,18 +147,18 @@ const CardExpensesPage = () => {
               </div>
             </div>
 
-            <div className="overflow-y-auto" style={{ maxHeight: 'calc(50vh - 100px)' }}>
+            <div className="space-y-4 p-4">
               {cardData[cardType]?.cards?.map((card, cardIndex) => (
-                <div key={cardIndex} className="border-b border-gray-200 last:border-b-0">
+                <div key={cardIndex} className="space-y-4">
                   {card.holders.map((holder, holderIndex) => {
                     const isExpanded = expandedHolders[`${cardType}-${cardIndex}-${holderIndex}`];
                     return (
-                      <div key={holderIndex} className="relative">
+                      <div key={holderIndex} className="border border-gray-200 rounded-lg overflow-hidden">
                         <div 
-                          className="sticky top-0 bg-gray-50 z-10 p-2 border-b border-gray-200 flex justify-between items-center cursor-pointer hover:bg-gray-100 transition-colors"
+                          className="bg-gray-50 p-3 flex justify-between items-center cursor-pointer hover:bg-gray-100 transition-colors"
                           onClick={() => toggleHolderExpansion(cardType, cardIndex, holderIndex)}
                         >
-                          <h3 className="font-semibold text-gray-800 ml-2">
+                          <h3 className="font-semibold text-gray-800">
                             {holder.holder}
                           </h3>
                           <div className="flex items-center">
@@ -183,7 +186,7 @@ const CardExpensesPage = () => {
                         </div>
 
                         {isExpanded && (
-                          <div className="overflow-y-auto" style={{ maxHeight: '40vh' }}>
+                          <div className="overflow-auto" style={{ maxHeight: '400px' }}>
                             {isMobile ? (
                               <div className="p-3 space-y-2">
                                 {holder.expenses.map((expense, expenseIndex) => (
@@ -217,47 +220,45 @@ const CardExpensesPage = () => {
                                 ))}
                               </div>
                             ) : (
-                              <div className="p-2">
-                                <table className="min-w-full divide-y divide-gray-200">
-                                  <thead className="bg-gray-50">
-                                    <tr>
-                                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Fecha
-                                      </th>
-                                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Descripción
-                                      </th>
-                                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        ARS
-                                      </th>
-                                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        USD
-                                      </th>
+                              <table className="min-w-full divide-y divide-gray-200">
+                                <thead className="bg-gray-50 sticky top-0 z-10">
+                                  <tr>
+                                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                      Fecha
+                                    </th>
+                                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                      Descripción
+                                    </th>
+                                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                      ARS
+                                    </th>
+                                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                      USD
+                                    </th>
+                                  </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                  {holder.expenses.map((expense, expenseIndex) => (
+                                    <tr
+                                      key={expenseIndex}
+                                      className="hover:bg-gray-50 transition-colors"
+                                    >
+                                      <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-700">
+                                        {expense.date}
+                                      </td>
+                                      <td className="px-3 py-2 text-sm text-gray-700 max-w-xs">
+                                        <div className="truncate">{expense.descriptions}</div>
+                                      </td>
+                                      <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-700">
+                                        {expense.amount_pesos ? formatCurrency(expense.amount_pesos) : '-'}
+                                      </td>
+                                      <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-700">
+                                        {expense.amount_usd ? formatCurrency(expense.amount_usd) : '-'}
+                                      </td>
                                     </tr>
-                                  </thead>
-                                  <tbody className="bg-white divide-y divide-gray-200">
-                                    {holder.expenses.map((expense, expenseIndex) => (
-                                      <tr
-                                        key={expenseIndex}
-                                        className="hover:bg-gray-50 transition-colors"
-                                      >
-                                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-700">
-                                          {expense.date}
-                                        </td>
-                                        <td className="px-3 py-2 text-sm text-gray-700 max-w-xs">
-                                          <div className="truncate">{expense.descriptions}</div>
-                                        </td>
-                                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-700">
-                                          {expense.amount_pesos ? formatCurrency(expense.amount_pesos) : '-'}
-                                        </td>
-                                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-700">
-                                          {expense.amount_usd ? formatCurrency(expense.amount_usd) : '-'}
-                                        </td>
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                </table>
-                              </div>
+                                  ))}
+                                </tbody>
+                              </table>
                             )}
                           </div>
                         )}
