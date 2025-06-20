@@ -11,12 +11,16 @@ const SyncButton = ({
 }) => {
   return (
     <button
-      onClick={onClick}
+      onClick={(e) => {
+        if (!disabled) {
+          onClick(e);
+        }
+      }}
       disabled={disabled}
       className={`w-full flex items-center justify-between p-4 rounded-lg border transition-all ${
         disabled 
-          ? 'bg-gray-100 cursor-not-allowed' 
-          : `bg-white hover:bg-${hoverColor}-50 hover:border-${hoverColor}-200 hover:text-${hoverColor}-700`
+          ? 'bg-gray-100 cursor-not-allowed opacity-75' 
+          : `bg-white hover:bg-${hoverColor}-50 hover:border-${hoverColor}-200 hover:text-${hoverColor}-700 cursor-pointer`
       }`}
     >
       <div className="flex items-center">

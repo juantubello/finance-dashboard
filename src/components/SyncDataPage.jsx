@@ -1,17 +1,86 @@
-import React from 'react';
+import React, { useState } from 'react';
 import SyncButton from './SyncButton';
 import SyncStatus from './SyncStatus';
+import { toast } from 'react-toastify';
 
-const SyncDataPage = ({ 
-  syncStatus,
-  isSyncing,
-  activeSync,
-  syncExpensesCurrentMonth,
-  syncExpensesHistorical,
-  syncIncomesCurrentMonth,
-  syncIncomesHistorical
-}) => {
-  // Define icons here
+const SyncDataPage = () => {
+  const [syncStatus, setSyncStatus] = useState('');
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [activeSync, setActiveSync] = useState(null);
+
+  const syncExpensesCurrentMonth = async () => {
+    setActiveSync('expensesCurrentMonth');
+    setIsSyncing(true);
+    try {
+      const response = await fetch('http://192.168.1.11:8000/syncExpenses/currentMonth');
+      if (!response.ok) throw new Error('Network response was not ok');
+      const data = await response.json();
+      setSyncStatus(data.message || 'Gastos del mes sincronizados correctamente');
+      toast.success('Gastos del mes sincronizados correctamente');
+    } catch (error) {
+      setSyncStatus(`Error: ${error.message}`);
+      toast.error('Error al sincronizar gastos del mes');
+    } finally {
+      setIsSyncing(false);
+      setActiveSync(null);
+    }
+  };
+
+  const syncExpensesHistorical = async () => {
+    setActiveSync('expensesHistorical');
+    setIsSyncing(true);
+    try {
+      const response = await fetch('http://192.168.1.11:8000/syncExpenses/historical');
+      if (!response.ok) throw new Error('Network response was not ok');
+      const data = await response.json();
+      setSyncStatus(data.message || 'Gastos históricos sincronizados correctamente');
+      toast.success('Gastos históricos sincronizados correctamente');
+    } catch (error) {
+      setSyncStatus(`Error: ${error.message}`);
+      toast.error('Error al sincronizar gastos históricos');
+    } finally {
+      setIsSyncing(false);
+      setActiveSync(null);
+    }
+  };
+
+  const syncIncomesCurrentMonth = async () => {
+    setActiveSync('incomesCurrentMonth');
+    setIsSyncing(true);
+    try {
+      const response = await fetch('http://192.168.1.11:8000/syncIncomes/currentMonth');
+      if (!response.ok) throw new Error('Network response was not ok');
+      const data = await response.json();
+      setSyncStatus(data.message || 'Ingresos del mes sincronizados correctamente');
+      toast.success('Ingresos del mes sincronizados correctamente');
+    } catch (error) {
+      setSyncStatus(`Error: ${error.message}`);
+      toast.error('Error al sincronizar ingresos del mes');
+    } finally {
+      setIsSyncing(false);
+      setActiveSync(null);
+    }
+  };
+
+  const syncIncomesHistorical = async () => {
+    setActiveSync('incomesHistorical');
+    setIsSyncing(true);
+    try {
+      const response = await fetch('http://192.168.1.11:8000/syncIncomes/historical');
+      if (!response.ok) throw new Error('Network response was not ok');
+      const data = await response.json();
+      setSyncStatus(data.message || 'Ingresos históricos sincronizados correctamente');
+      toast.success('Ingresos históricos sincronizados correctamente');
+    } catch (error) {
+      setSyncStatus(`Error: ${error.message}`);
+      toast.error('Error al sincronizar ingresos históricos');
+    } finally {
+      setIsSyncing(false);
+      setActiveSync(null);
+    }
+  };
+
+  // Define icons
   const clockIcon = (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -41,7 +110,7 @@ const SyncDataPage = ({
       id: 'expensesCurrentMonth',
       label: "Sincronizar gastos del mes",
       onClick: syncExpensesCurrentMonth,
-      disabled: isSyncing,
+      disabled: isSyncing && activeSync !== 'expensesCurrentMonth',
       icon: clockIcon,
       iconColor: "blue",
       hoverColor: "blue",
@@ -51,7 +120,7 @@ const SyncDataPage = ({
       id: 'expensesHistorical',
       label: "Sincronizar gastos históricos",
       onClick: syncExpensesHistorical,
-      disabled: isSyncing,
+      disabled: isSyncing && activeSync !== 'expensesHistorical',
       icon: calendarIcon,
       iconColor: "blue",
       hoverColor: "blue",
@@ -64,7 +133,7 @@ const SyncDataPage = ({
       id: 'incomesCurrentMonth',
       label: "Sincronizar ingresos del mes",
       onClick: syncIncomesCurrentMonth,
-      disabled: isSyncing,
+      disabled: isSyncing && activeSync !== 'incomesCurrentMonth',
       icon: incomeClockIcon,
       iconColor: "green",
       hoverColor: "green",
@@ -74,7 +143,7 @@ const SyncDataPage = ({
       id: 'incomesHistorical',
       label: "Sincronizar ingresos históricos",
       onClick: syncIncomesHistorical,
-      disabled: isSyncing,
+      disabled: isSyncing && activeSync !== 'incomesHistorical',
       icon: incomeCalendarIcon,
       iconColor: "green",
       hoverColor: "green",
@@ -122,7 +191,7 @@ const SyncDataPage = ({
         </div>
       </div>
       
-      <SyncStatus status={syncStatus} />
+     
     </div>
   );
 };

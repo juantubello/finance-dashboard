@@ -1,12 +1,30 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Navbar = ({ filters, setFilters, setSidebarOpen }) => {
+  const navigate = useNavigate();
+
+const handleLogoClick = () => {
+  const newFilters = {
+    selectedYear: new Date().getFullYear(),
+    selectedMonth: new Date().getMonth() + 1
+  };
+  setFilters(newFilters);
+  navigate('/', { 
+    state: { filters: newFilters },
+    replace: true  // This replaces the current entry in history instead of adding a new one
+  });
+};
+
   return (
     <div className="bg-gray-700 shadow-md w-full py-3 px-6 fixed top-0 z-50">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <div className="bg-gray-800 rounded-lg p-2">
+        <button 
+          onClick={handleLogoClick}
+          className="bg-gray-800 rounded-lg p-2 hover:bg-gray-900 transition-colors"
+        >
           <h1 className="text-xl font-bold text-white">FP</h1>
-        </div>
+        </button>
         
         <div className="flex items-center space-x-4">
           <div className="relative">

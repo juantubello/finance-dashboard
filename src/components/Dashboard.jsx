@@ -1,14 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import Navbar from './Navbar';
-import Sidebar from './Sidebar';
 import DashboardContent from './DashboardContent';
-import SyncDataPage from './SyncDataPage';
 import Card from './Card';
+import { useNavigate } from 'react-router-dom';
 
-const Dashboard = () => {
+const Dashboard = ({ activeNavItem, filters, setFilters }) => {
   const [dashboardData, setDashboardData] = useState({
     totals: {
       expense: 0,
@@ -21,21 +16,9 @@ const Dashboard = () => {
     error: null
   });
 
-  const [filters, setFilters] = useState({
-    selectedYear: new Date().getFullYear(),
-    selectedMonth: new Date().getMonth() + 1
-  });
-
   const [isMobile, setIsMobile] = useState(false);
   const [showGraph, setShowGraph] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [activeNavItem, setActiveNavItem] = useState('Reporte mensual');
-  const [syncStatus, setSyncStatus] = useState('');
-  const [isSyncing, setIsSyncing] = useState(false);
-  const [activeSync, setActiveSync] = useState(null);
   const navigate = useNavigate();
-
-  // ... [Keep all your existing sync functions]
 
   useEffect(() => {
     const handleResize = () => {
@@ -49,6 +32,8 @@ const Dashboard = () => {
 
   const fetchExpensesData = async () => {
     try {
+      setDashboardData(prev => ({...prev, loading: true, error: null}));
+      
       const { selectedYear, selectedMonth } = filters;
       const expensesResponse = await fetch(`http://192.168.1.11:8000/expenses/${selectedYear}/${selectedMonth}`);
       if (!expensesResponse.ok) throw new Error('Network response was not ok');
@@ -66,7 +51,6 @@ const Dashboard = () => {
       const incomeData = await incomeResponse.json();
       const totalIncome = parseFloat(incomeData.income?.total_ars?.replace(/\./g, '').replace(',', '.') || 0);
 
-      // Card data fetch
       const currentDate = new Date();
       const cardResponse = await fetch(`http://192.168.1.11:8000/getResumeExpenses/${currentDate.getFullYear()}/${currentDate.getMonth() + 1}/all`);
       const cardData = await cardResponse.json();
@@ -99,101 +83,74 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    fetchExpensesData();
+    if (activeNavItem === 'Reporte mensual') {
+      fetchExpensesData();
+    }
   }, [filters, activeNavItem]);
 
   if (dashboardData.loading) {
-    return <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center pt-24">
-      <div className="text-xl font-semibold text-gray-700">Cargando datos...</div>
-    </div>;
+    return (
+      <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center pt-24">
+        <div className="text-xl font-semibold text-gray-700">Cargando datos...</div>
+      </div>
+    );
   }
 
   if (dashboardData.error) {
-    return <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center pt-24">
-      <div className="text-xl font-semibold text-red-600">Error: {dashboardData.error}</div>
-    </div>;
+    return (
+      <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center pt-24">
+        <div className="text-xl font-semibold text-red-600">Error: {dashboardData.error}</div>
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <ToastContainer
-        position="bottom-center"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        style={{ bottom: '6rem' }}
-        toastClassName="bg-white text-gray-800 shadow-md rounded-lg border border-gray-200"
-        bodyClassName="font-medium"
-        progressClassName="bg-blue-500"
-      />
-      
-      <Navbar 
-        filters={filters} 
-        setFilters={setFilters} 
-        setSidebarOpen={setSidebarOpen} 
-      />
-      
-      <Sidebar 
-        sidebarOpen={sidebarOpen} 
-        setSidebarOpen={setSidebarOpen}
-        activeNavItem={activeNavItem}
-        setActiveNavItem={setActiveNavItem}
-      />
-
-      <div className="max-w-7xl mx-auto p-6 pt-24">  
-        {activeNavItem === 'Reporte mensual' && (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              <Card 
-                title="Balance" 
-                value={dashboardData.totals?.remaining || 0} 
-                icon="🏦" 
-                color={dashboardData.totals?.remaining >= 0 ? 'blue' : 'orange'}
-              />
-              <Card 
-                title="Gastos en efectivo / debito" 
-                value={dashboardData.totals?.expense || 0} 
-                icon="💸" 
-                color="red"
-              />
-              <Card 
-                title="Ingreso" 
-                value={dashboardData.totals?.income || 0} 
-                icon="💰" 
-                color="green"
-              />
-              <Card 
-                title="Total resumen tarjetas" 
-                value={dashboardData.totals?.card || 0} 
-                icon="💳" 
-                color="purple"
-                showDetailButton={true}
-                onDetailClick={() => navigate('/card-expenses')}
+    <>
+      {activeNavItem === 'Reporte mensual' && (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <Card 
+              title="Balance" 
+              value={dashboardData.totals?.remaining || 0} 
+              icon="🏦" 
+              color={dashboardData.totals?.remaining >= 0 ? 'blue' : 'orange'}
+            />
+            <Card 
+              title="Gastos en efectivo / debito" 
+              value={dashboardData.totals?.expense || 0} 
+              icon="💸" 
+              color="red"
+            />
+            <Card 
+              title="Ingreso" 
+              value={dashboardData.totals?.income || 0} 
+              icon="💰" 
+              color="green"
+            />
+            <Card 
+              title="Total resumen tarjetas" 
+              value={dashboardData.totals?.card || 0} 
+              icon="💳" 
+              color="purple"
+              showDetailButton={true}
+              onDetailClick={() => navigate('/card-expenses')}
+            />
+          </div>
+          
+          <div className="bg-white p-6 rounded-xl shadow-sm mb-8">
+            <h2 className="text-xl font-semibold text-gray-700 mb-4">Gastos en efectivo / debito</h2>
+            <div className="h-96">
+              <DashboardContent 
+                data={dashboardData.categories || []} 
+                isMobile={isMobile}
+                showGraph={showGraph}
+                setShowGraph={setShowGraph}
               />
             </div>
-            
-            <div className="bg-white p-6 rounded-xl shadow-sm mb-8">
-              <h2 className="text-xl font-semibold text-gray-700 mb-4">Gastos en efectivo / debito</h2>
-              <div className="h-96">
-                <DashboardContent 
-                  data={dashboardData.categories || []} 
-                  isMobile={isMobile}
-                  showGraph={showGraph}
-                  setShowGraph={setShowGraph}
-                />
-              </div>
-            </div>
-          </>
-        )}
-        
-        {/* ... other nav items */}
-      </div>
-    </div>
+          </div>
+        </>
+      )}
+    </>
   );
 };
 

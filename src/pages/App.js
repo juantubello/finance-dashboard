@@ -1,21 +1,20 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Dashboard from '../components/Dashboard';  // Adjusted path
-import CardExpensesPage from '../components/CardExpensesPage';  // Adjusted path
+import Layout from '../components/Layout';
+import Dashboard from '../components/Dashboard';
+import CardExpensesPage from '../components/CardExpensesPage';
+import SyncDataPage from '../components/SyncDataPage';
 
-function App() {
+const App = () => {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Dashboard />} />
-        {/* Updated route without required cardType parameter */}
-        <Route path="/card-expenses" element={<CardExpensesPage />} />
-        {/* Optional: Keep this if you want to support direct card type access */}
-        <Route path="/card-expenses/:cardType" element={<CardExpensesPage />} />
-        <Route path="*" element={<Dashboard />} />
+        <Route path="/" element={<Layout><Dashboard /></Layout>} />
+        <Route path="/card-expenses" element={<Layout><CardExpensesPage /></Layout>} />
+        <Route path="/sync-data" element={<Layout><SyncDataPage /></Layout>} />
       </Routes>
     </Router>
   );
-}
+};
 
 export default App;
