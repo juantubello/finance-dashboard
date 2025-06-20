@@ -12,7 +12,7 @@ const SyncDataPage = () => {
     setActiveSync('expensesCurrentMonth');
     setIsSyncing(true);
     try {
-      const response = await fetch('http://192.168.1.11:8000/syncExpenses/currentMonth');
+      const response = await fetch('http://192.168.1.11:8000/syncCurrentMonthExpenses');
       if (!response.ok) throw new Error('Network response was not ok');
       const data = await response.json();
       setSyncStatus(data.message || 'Gastos del mes sincronizados correctamente');
@@ -48,7 +48,7 @@ const SyncDataPage = () => {
     setActiveSync('incomesCurrentMonth');
     setIsSyncing(true);
     try {
-      const response = await fetch('http://192.168.1.11:8000/syncIncomes/currentMonth');
+      const response = await fetch('http://192.168.1.11:8000/syncCurrentMonthIncome');
       if (!response.ok) throw new Error('Network response was not ok');
       const data = await response.json();
       setSyncStatus(data.message || 'Ingresos del mes sincronizados correctamente');

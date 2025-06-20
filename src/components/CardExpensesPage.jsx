@@ -94,7 +94,7 @@ const CardExpensesPage = ({ activeNavItem, filters, setFilters }) => {
 
   if (loading) {
     return (
-      <div className="p-6 pt-24 w-full mx-auto">
+      <div className="p-6 pt-16 w-full mx-auto">
         <div className="bg-white rounded-xl shadow-sm p-6">
           <div className="text-center py-8">Cargando...</div>
         </div>
@@ -103,8 +103,8 @@ const CardExpensesPage = ({ activeNavItem, filters, setFilters }) => {
   }
 
   return (
-    <div className="p-6 pt-24 w-full mx-auto max-w-screen-2xl">
-      <div className="space-y-8 w-full">
+    <div className="p-4 pt-16 w-full mx-auto max-w-screen-2xl">
+      <div className="space-y-6 w-full">
         {['visa', 'mastercard'].map((cardType) => (
           <div key={cardType} className="bg-white rounded-xl shadow-sm overflow-hidden w-full">
             <div className="p-4 border-b border-gray-200 bg-gray-50">
@@ -112,12 +112,12 @@ const CardExpensesPage = ({ activeNavItem, filters, setFilters }) => {
                 <img
                   src={getCardLogo(cardType)}
                   alt={cardType}
-                  className="h-8 mr-3 object-contain"
+                  className="h-8 md:h-10 mr-3 object-contain"
                   onError={(e) => {
                     e.target.style.display = 'none';
                   }}
                 />
-                <h1 className="text-xl font-bold text-gray-800">
+                <h1 className="text-lg md:text-2xl font-bold text-gray-800">
                   Resumen de {cardType === 'visa' ? 'Visa' : 'Mastercard'} - {new Date(filters.selectedYear, filters.selectedMonth - 1).toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })}
                 </h1>
               </div>
@@ -131,22 +131,22 @@ const CardExpensesPage = ({ activeNavItem, filters, setFilters }) => {
                     return (
                       <div key={holderIndex} className="border border-gray-200 rounded-lg overflow-hidden w-full">
                         <div 
-                          className="bg-gray-50 p-3 flex justify-between items-center cursor-pointer hover:bg-gray-100 transition-colors w-full"
+                          className="bg-gray-50 p-3 md:p-4 flex justify-between items-center cursor-pointer hover:bg-gray-100 transition-colors w-full"
                           onClick={() => toggleHolderExpansion(cardType, cardIndex, holderIndex)}
                         >
-                          <h3 className="font-semibold text-gray-800">
+                          <h3 className="font-semibold text-gray-800 text-sm md:text-base">
                             {holder.holder}
                           </h3>
                           <div className="flex items-center gap-2">
-                            <div className="bg-blue-50 text-blue-800 px-2 py-1 rounded-lg text-xs whitespace-nowrap">
+                            <div className="bg-blue-50 text-blue-800 px-2 py-1 rounded-lg text-xs md:text-sm whitespace-nowrap">
                               ARS: {formatCurrency(holder.total_ars)}
                             </div>
-                            <div className="bg-green-50 text-green-800 px-2 py-1 rounded-lg text-xs whitespace-nowrap">
+                            <div className="bg-green-50 text-green-800 px-2 py-1 rounded-lg text-xs md:text-sm whitespace-nowrap">
                               USD: {formatCurrency(holder.total_usd)}
                             </div>
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
-                              className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                              className={`h-4 w-4 md:h-5 md:w-5 text-gray-500 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
                               viewBox="0 0 20 20"
                               fill="currentColor"
                             >
@@ -160,32 +160,32 @@ const CardExpensesPage = ({ activeNavItem, filters, setFilters }) => {
                         </div>
 
                         {isExpanded && (
-                          <div className="overflow-auto w-full" style={{ maxHeight: '400px' }}>
+                          <div className="overflow-auto w-full" style={{ maxHeight: '500px' }}>
                             {isMobile ? (
-                              <div className="p-3 space-y-2">
+                              <div className="p-2 md:p-3 space-y-2 md:space-y-3">
                                 {holder.expenses.map((expense, expenseIndex) => (
                                   <div
                                     key={expenseIndex}
-                                    className="border border-gray-200 rounded-lg p-2 hover:bg-gray-50 transition-colors"
+                                    className="border border-gray-200 rounded-lg p-2 md:p-3 hover:bg-gray-50 transition-colors"
                                   >
-                                    <div className="flex justify-between text-xs">
+                                    <div className="flex justify-between text-sm">
                                       <span className="font-medium text-gray-700">Fecha:</span>
                                       <span className="text-gray-700">{expense.date}</span>
                                     </div>
-                                    <div className="mt-1">
-                                      <span className="text-xs font-medium text-gray-700">Descripción:</span>
-                                      <p className="text-xs text-gray-700 mt-0.5">{expense.descriptions}</p>
+                                    <div className="mt-2">
+                                      <span className="text-sm font-medium text-gray-700">Descripción:</span>
+                                      <p className="text-sm text-gray-700 mt-1">{expense.descriptions}</p>
                                     </div>
-                                    <div className="grid grid-cols-2 gap-1 mt-1">
+                                    <div className="grid grid-cols-2 gap-2 mt-2">
                                       <div>
-                                        <span className="text-xs text-gray-500">ARS:</span>
-                                        <p className="text-xs font-medium text-gray-700">
+                                        <span className="text-sm text-gray-500">ARS:</span>
+                                        <p className="text-sm font-medium text-gray-700">
                                           {expense.amount_pesos ? formatCurrency(expense.amount_pesos) : '-'}
                                         </p>
                                       </div>
                                       <div>
-                                        <span className="text-xs text-gray-500">USD:</span>
-                                        <p className="text-xs font-medium text-gray-700">
+                                        <span className="text-sm text-gray-500">USD:</span>
+                                        <p className="text-sm font-medium text-gray-700">
                                           {expense.amount_usd ? formatCurrency(expense.amount_usd) : '-'}
                                         </p>
                                       </div>
@@ -197,16 +197,16 @@ const CardExpensesPage = ({ activeNavItem, filters, setFilters }) => {
                               <table className="min-w-full divide-y divide-gray-200 w-full">
                                 <thead className="bg-gray-50 sticky top-0 z-10">
                                   <tr>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th className="px-6 py-3 text-left text-xs md:text-sm font-medium text-gray-500 uppercase tracking-wider">
                                       Fecha
                                     </th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th className="px-6 py-3 text-left text-xs md:text-sm font-medium text-gray-500 uppercase tracking-wider">
                                       Descripción
                                     </th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th className="px-6 py-3 text-left text-xs md:text-sm font-medium text-gray-500 uppercase tracking-wider">
                                       ARS
                                     </th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th className="px-6 py-3 text-left text-xs md:text-sm font-medium text-gray-500 uppercase tracking-wider">
                                       USD
                                     </th>
                                   </tr>
@@ -217,16 +217,16 @@ const CardExpensesPage = ({ activeNavItem, filters, setFilters }) => {
                                       key={expenseIndex}
                                       className="hover:bg-gray-50 transition-colors"
                                     >
-                                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
+                                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                                         {expense.date}
                                       </td>
-                                      <td className="px-4 py-3 text-sm text-gray-700 max-w-xs">
+                                      <td className="px-6 py-4 text-sm text-gray-700 max-w-xs">
                                         <div className="truncate">{expense.descriptions}</div>
                                       </td>
-                                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
+                                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                                         {expense.amount_pesos ? formatCurrency(expense.amount_pesos) : '-'}
                                       </td>
-                                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
+                                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                                         {expense.amount_usd ? formatCurrency(expense.amount_usd) : '-'}
                                       </td>
                                     </tr>
