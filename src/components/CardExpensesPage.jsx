@@ -121,7 +121,7 @@ const CardExpensesPage = ({ activeNavItem, filters, setFilters }) => {
                 <img
                   src={getCardLogo(cardType)}
                   alt={cardType}
-                  className={`mr-3 object-contain ${cardType === 'visa' ? 'h-8 md:h-10 brightness-0 invert' : 'h-10 md:h-12 brightness-0 invert sepia'}`}
+                  className={`mr-3 object-contain ${cardType === 'visa' ? 'h-8 md:h-10 brightness-0 invert' : 'h-14 md:h-14 brightness-0 invert sepia'}`}
                   onError={(e) => {
                     e.target.style.display = 'none';
                   }}
