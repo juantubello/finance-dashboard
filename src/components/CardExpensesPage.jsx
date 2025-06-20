@@ -138,10 +138,10 @@ const CardExpensesPage = ({ activeNavItem, filters, setFilters }) => {
                             {holder.holder}
                           </h3>
                           <div className="flex items-center gap-2">
-                            <div className="bg-blue-50 text-blue-800 px-2 py-1 rounded-lg text-xs md:text-sm whitespace-nowrap">
+                            <div className="bg-blue-50 text-blue-800 px-2 py-1 rounded-lg text-xs md:text-sm whitespace-nowrap min-w-[90px] text-right">
                               ARS: {formatCurrency(holder.total_ars)}
                             </div>
-                            <div className="bg-green-50 text-green-800 px-2 py-1 rounded-lg text-xs md:text-sm whitespace-nowrap">
+                            <div className="bg-green-50 text-green-800 px-2 py-1 rounded-lg text-xs md:text-sm whitespace-nowrap min-w-[90px] text-right">
                               USD: {formatCurrency(holder.total_usd)}
                             </div>
                             <svg
