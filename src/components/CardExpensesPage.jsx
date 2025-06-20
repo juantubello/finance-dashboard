@@ -106,19 +106,20 @@ const CardExpensesPage = ({ activeNavItem, filters, setFilters }) => {
     <div className="p-4 pt-16 w-full mx-auto max-w-screen-2xl">
       <div className="space-y-6 w-full">
         {['visa', 'mastercard'].map((cardType) => (
-          <div key={cardType} className="bg-white rounded-xl shadow-sm overflow-hidden w-full">
-            <div className="p-4 border-b border-gray-200 bg-gray-50">
+          <div key={cardType} className="bg-white rounded-xl shadow-lg overflow-hidden w-full">
+            {/* Card Header with Black Card Styling */}
+            <div className={`p-4 border-b ${cardType === 'visa' ? 'bg-gradient-to-r from-gray-900 to-gray-800' : 'bg-gradient-to-r from-gray-800 to-gray-700'}`}>
               <div className="flex items-center">
                 <img
                   src={getCardLogo(cardType)}
                   alt={cardType}
-                  className="h-8 md:h-10 mr-3 object-contain"
+                  className={`mr-3 object-contain ${cardType === 'visa' ? 'h-8 md:h-10 brightness-0 invert' : 'h-10 md:h-12 brightness-0 invert sepia'}`}
                   onError={(e) => {
                     e.target.style.display = 'none';
                   }}
                 />
-                <h1 className="text-lg md:text-2xl font-bold text-gray-800">
-                  Resumen de {cardType === 'visa' ? 'Visa' : 'Mastercard'} - {new Date(filters.selectedYear, filters.selectedMonth - 1).toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })}
+                <h1 className={`text-lg md:text-2xl font-bold ${cardType === 'visa' ? 'text-blue-100' : 'text-orange-100'}`}>
+                  {cardType === 'visa' ? 'Visa' : 'Mastercard'} - {new Date(filters.selectedYear, filters.selectedMonth - 1).toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })}
                 </h1>
               </div>
             </div>
@@ -130,8 +131,9 @@ const CardExpensesPage = ({ activeNavItem, filters, setFilters }) => {
                     const isExpanded = expandedHolders[`${cardType}-${cardIndex}-${holderIndex}`];
                     return (
                       <div key={holderIndex} className="border border-gray-200 rounded-lg overflow-hidden w-full">
+                        {/* Holder Header - Light grey */}
                         <div 
-                          className="bg-gray-50 p-3 md:p-4 flex justify-between items-center cursor-pointer hover:bg-gray-100 transition-colors w-full"
+                          className="bg-gray-100 p-3 md:p-4 flex justify-between items-center cursor-pointer hover:bg-gray-200 transition-colors w-full"
                           onClick={() => toggleHolderExpansion(cardType, cardIndex, holderIndex)}
                         >
                           <h3 className="font-semibold text-gray-800 text-sm md:text-base">
@@ -166,7 +168,13 @@ const CardExpensesPage = ({ activeNavItem, filters, setFilters }) => {
                                 {holder.expenses.map((expense, expenseIndex) => (
                                   <div
                                     key={expenseIndex}
-                                    className="border border-gray-200 rounded-lg p-2 md:p-3 hover:bg-gray-50 transition-colors"
+                                    className={`border border-gray-200 rounded-lg p-2 md:p-3 transition-colors ${
+                                      expense.amount_pesos && expense.amount_pesos !== '0' && expense.amount_pesos !== '0,00' 
+                                        ? 'bg-blue-50 hover:bg-blue-100' 
+                                        : expense.amount_usd && expense.amount_usd !== '0' && expense.amount_usd !== '0,00'
+                                          ? 'bg-green-50 hover:bg-green-100'
+                                          : 'bg-white hover:bg-gray-50'
+                                    }`}
                                   >
                                     <div className="flex justify-between text-sm">
                                       <span className="font-medium text-gray-700">Fecha:</span>
@@ -211,11 +219,18 @@ const CardExpensesPage = ({ activeNavItem, filters, setFilters }) => {
                                     </th>
                                   </tr>
                                 </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
+                                <tbody className="divide-y divide-gray-200">
                                   {holder.expenses.map((expense, expenseIndex) => (
                                     <tr
                                       key={expenseIndex}
-                                      className="hover:bg-gray-50 transition-colors"
+                                      className={`
+                                        ${expense.amount_pesos && expense.amount_pesos !== '0' && expense.amount_pesos !== '0,00' 
+                                          ? 'bg-blue-50 hover:bg-blue-100' 
+                                          : expense.amount_usd && expense.amount_usd !== '0' && expense.amount_usd !== '0,00'
+                                            ? 'bg-green-50 hover:bg-green-100'
+                                            : 'bg-white hover:bg-gray-50'
+                                        }
+                                      `}
                                     >
                                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                                         {expense.date}
