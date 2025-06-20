@@ -16,14 +16,24 @@ const formatCurrency = (value) => {
   }).format(value);
 };
 
-const Card = ({ title, value, icon, color }) => {
+const Card = ({ title, value, icon, color, showDetailButton, onDetailClick }) => {
   return (
-    <div className={`${colorClasses[color]} p-5 rounded-lg border flex items-center justify-between`}>
-      <div>
-        <p className="text-sm font-medium text-gray-500">{title}</p>
-        <p className="text-2xl font-bold mt-1">{formatCurrency(value)}</p>
+    <div className={`${colorClasses[color]} p-5 rounded-lg border flex flex-col justify-between h-full`}>
+      <div className="flex justify-between items-start">
+        <div>
+          <p className="text-sm font-medium text-gray-500">{title}</p>
+          <p className="text-2xl font-bold mt-1">{formatCurrency(value)}</p>
+        </div>
+        <span className="text-3xl">{icon}</span>
       </div>
-      <span className="text-3xl">{icon}</span>
+      {showDetailButton && (
+        <button 
+          onClick={onDetailClick}
+          className="mt-4 bg-white hover:bg-gray-100 text-purple-700 font-medium py-1 px-3 rounded-lg border border-purple-200 text-sm self-end transition-colors duration-200"
+        >
+          Ver detalle
+        </button>
+      )}
     </div>
   );
 };

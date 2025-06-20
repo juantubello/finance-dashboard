@@ -1,11 +1,20 @@
 import React from 'react';
-import Dashboard from '../components/Dashboard'; // Esto busca en src/components/Dashboard
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Dashboard from '../components/Dashboard';  // Adjusted path
+import CardExpensesPage from '../components/CardExpensesPage';  // Adjusted path
 
 function App() {
-   return (
-    <div className="App">
-      <Dashboard />
-    </div>
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        {/* Updated route without required cardType parameter */}
+        <Route path="/card-expenses" element={<CardExpensesPage />} />
+        {/* Optional: Keep this if you want to support direct card type access */}
+        <Route path="/card-expenses/:cardType" element={<CardExpensesPage />} />
+        <Route path="*" element={<Dashboard />} />
+      </Routes>
+    </Router>
   );
 }
 
