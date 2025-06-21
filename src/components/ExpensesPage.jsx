@@ -157,8 +157,8 @@ const ExpensesPage = ({ filters }) => {
   return (
     <div className="p-4 pt-16 max-w-screen-2xl mx-auto space-y-6">
       <div className="bg-white p-6 rounded-xl shadow-lg overflow-hidden">
-        <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">Listado de gastos</h2>
-        <div className="h-1 w-20 bg-blue-500 rounded-full mb-4"></div>
+        <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">Detalle de gastos 🚨</h2>
+        <div className="h-1 w-20 bg-red-500 rounded-full mb-4"></div>
 
         <GlobalFilter
           globalFilter={globalFilter}

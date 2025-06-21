@@ -113,10 +113,10 @@ const Dashboard = ({ activeNavItem, filters, setFilters }) => {
     title="Balance" 
     value={dashboardData.totals?.remaining || 0} 
     className={`${dashboardData.totals?.remaining >= 0 
-      ? 'bg-gradient-to-r from-blue-900 to-blue-800' 
-      : 'bg-gradient-to-r from-orange-900 to-orange-800'
+      ? 'bg-gradient-to-r from-[#2836a6] to-[#3945a3] text-white border-3 border-[#2130a6]' 
+      : 'bg-gradient-to-r from-[#2836a6] to-[#3945a3] text-white border-3 border-[#2130a6]'
     } text-white border-gray-700`}
-    icon="🏦"
+    icon="💵"
     iconClassName="text-white opacity-90"
     textClassName="text-white"
   />
@@ -124,8 +124,8 @@ const Dashboard = ({ activeNavItem, filters, setFilters }) => {
 <Card 
   title="Gastos" 
   value={dashboardData.totals?.expense || 0} 
-  className="bg-gradient-to-r from-red-900 to-red-800 text-white border-gray-700"
-  icon="💸"
+  className="bg-gradient-to-r from-[#b34040] to-[#b54747] text-white border-3 border-[#ad3131]"
+  icon="🚨"
   iconClassName="text-white opacity-90"
   textClassName="text-white"
   showDetailButton={true}
@@ -135,8 +135,8 @@ const Dashboard = ({ activeNavItem, filters, setFilters }) => {
   <Card 
     title="Ingreso" 
     value={dashboardData.totals?.income || 0} 
-    className="bg-gradient-to-r from-green-900 to-green-800 text-white border-gray-700"
-    icon="💰"
+    className="bg-gradient-to-r from-[#45853d] to-[#51824b] text-white border-3 border-[#1b5413]"
+    icon="✅"
     iconClassName="text-white opacity-90"
     textClassName="text-white"
   />
