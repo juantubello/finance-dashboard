@@ -80,27 +80,26 @@ const SyncDataPage = () => {
     }
   };
 
-  // Define icons
   const clockIcon = (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
     </svg>
   );
 
   const calendarIcon = (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
     </svg>
   );
 
   const incomeClockIcon = (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
     </svg>
   );
 
   const incomeCalendarIcon = (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
     </svg>
   );
@@ -152,46 +151,51 @@ const SyncDataPage = () => {
   ];
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow-sm mb-8">
-      <h2 className="text-xl font-semibold text-gray-700 mb-6">Sincronizar datos</h2>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium text-gray-700 border-b pb-2">Gastos</h3>
-          {expenseButtons.map((button) => (
-            <SyncButton
-              key={button.id}
-              onClick={button.onClick}
-              disabled={button.disabled}
-              icon={button.icon}
-              iconColor={button.iconColor}
-              hoverColor={button.hoverColor}
-              isLoading={button.isLoading}
-            >
-              {button.label}
-            </SyncButton>
-          ))}
+    <div className="p-4 pt-16 w-full mx-auto max-w-screen-2xl">
+      <div className="bg-white rounded-xl shadow-lg p-6">
+        <div className="mb-6">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
+            Sincronizar datos
+          </h1>
+          <div className="mt-2 h-1 w-20 bg-blue-500 rounded-full"></div>
         </div>
-        
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium text-gray-700 border-b pb-2">Ingresos</h3>
-          {incomeButtons.map((button) => (
-            <SyncButton
-              key={button.id}
-              onClick={button.onClick}
-              disabled={button.disabled}
-              icon={button.icon}
-              iconColor={button.iconColor}
-              hoverColor={button.hoverColor}
-              isLoading={button.isLoading}
-            >
-              {button.label}
-            </SyncButton>
-          ))}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-gray-700 border-b pb-2">Gastos</h3>
+            {expenseButtons.map((button) => (
+              <SyncButton
+                key={button.id}
+                onClick={button.onClick}
+                disabled={button.disabled}
+                icon={button.icon}
+                iconColor={button.iconColor}
+                hoverColor={button.hoverColor}
+                isLoading={button.isLoading}
+              >
+                {button.label}
+              </SyncButton>
+            ))}
+          </div>
+
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-gray-700 border-b pb-2">Ingresos</h3>
+            {incomeButtons.map((button) => (
+              <SyncButton
+                key={button.id}
+                onClick={button.onClick}
+                disabled={button.disabled}
+                icon={button.icon}
+                iconColor={button.iconColor}
+                hoverColor={button.hoverColor}
+                isLoading={button.isLoading}
+              >
+                {button.label}
+              </SyncButton>
+            ))}
+          </div>
         </div>
       </div>
-      
-     
     </div>
   );
 };

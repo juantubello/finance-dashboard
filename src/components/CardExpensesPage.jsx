@@ -105,12 +105,12 @@ const CardExpensesPage = ({ activeNavItem, filters, setFilters }) => {
   return (
     <div className="p-4 pt-16 w-full mx-auto max-w-screen-2xl">
       {/* Added Resumen de tarjetas title */}
-      {/* <div className="mb-6">
+      <div className="mb-6">
         <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
           Resumen de tarjetas
         </h1>
         <div className="mt-2 h-1 w-20 bg-blue-500 rounded-full"></div>
-      </div> */}
+      </div>
 
       <div className="space-y-6 w-full">
         {['visa', 'mastercard'].map((cardType) => (
