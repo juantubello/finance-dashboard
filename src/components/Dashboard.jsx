@@ -108,7 +108,7 @@ const Dashboard = ({ activeNavItem, filters, setFilters }) => {
     <>
       {activeNavItem === 'Reporte mensual' && (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             <Card 
               title="Balance" 
               value={dashboardData.totals?.remaining || 0} 
@@ -116,7 +116,7 @@ const Dashboard = ({ activeNavItem, filters, setFilters }) => {
               color={dashboardData.totals?.remaining >= 0 ? 'blue' : 'orange'}
             />
             <Card 
-              title="Gastos en efectivo / debito" 
+              title="Gastos" 
               value={dashboardData.totals?.expense || 0} 
               icon="💸" 
               color="red"
@@ -127,14 +127,14 @@ const Dashboard = ({ activeNavItem, filters, setFilters }) => {
               icon="💰" 
               color="green"
             />
-            <Card 
-              title="Total resumen tarjetas" 
-              value={dashboardData.totals?.card || 0} 
-              icon="💳" 
-              color="purple"
-              showDetailButton={true}
-              onDetailClick={() => navigate('/card-expenses')}
-            />
+          <Card 
+  title="Tarjetas" 
+  value={dashboardData.totals?.card || 0}
+  showDetailButton={true}
+  onDetailClick={() => navigate('/card-expenses')}
+  className="bg-gradient-to-r from-gray-900 to-gray-800 border-gray-700"
+  useVisaLogo={true}
+/>
           </div>
           
           <div className="bg-white p-6 rounded-xl shadow-sm mb-8">

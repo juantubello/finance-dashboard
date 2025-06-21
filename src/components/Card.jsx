@@ -1,11 +1,11 @@
 import React from 'react';
 
 const colorClasses = {
-  green: 'bg-green-50 border-green-200 text-green-800',
-  red: 'bg-red-50 border-red-200 text-red-800',
-  blue: 'bg-blue-50 border-blue-200 text-blue-800',
-  orange: 'bg-orange-50 border-orange-200 text-orange-800',
-  purple: 'bg-purple-50 border-purple-200 text-purple-800'
+  green: 'bg-green-50 border-green-100 text-green-800',
+  red: 'bg-red-50 border-red-100 text-red-800',
+  blue: 'bg-blue-50 border-blue-100 text-blue-800',
+  orange: 'bg-orange-50 border-orange-100 text-orange-800',
+  purple: 'bg-purple-50 border-purple-100 text-purple-800'
 };
 
 const formatCurrency = (value) => {
@@ -16,22 +16,60 @@ const formatCurrency = (value) => {
   }).format(value);
 };
 
-const Card = ({ title, value, icon, color, showDetailButton, onDetailClick }) => {
+const Card = ({ 
+  title, 
+  value, 
+  icon, 
+  color, 
+  showDetailButton, 
+  onDetailClick, 
+  className = '', 
+  iconClassName = '', 
+  textClassName = '',
+  useVisaLogo = false
+}) => {
+  const isDarkTheme = className.includes('from-gray-900') || className.includes('bg-gray-800');
+  
   return (
-    <div className={`${colorClasses[color]} p-5 rounded-lg border flex flex-col justify-between h-full`}>
-      <div className="flex justify-between items-start">
-        <div>
-          <p className="text-sm font-medium text-gray-500">{title}</p>
-          <p className="text-2xl font-bold mt-1">{formatCurrency(value)}</p>
+    <div className={`${colorClasses[color]} ${className} p-4 rounded-lg border flex flex-col h-full`}>
+      <div className="flex justify-between items-center">
+        <div className={textClassName || (isDarkTheme ? 'text-white' : '')}>
+          <p className={`text-xs font-medium uppercase tracking-wider ${isDarkTheme ? 'opacity-80' : ''}`}>
+            {title}
+          </p>
+          <p className={`text-xl font-semibold mt-1 ${isDarkTheme ? '' : ''}`}>
+            {formatCurrency(value)}
+          </p>
         </div>
-        <span className="text-3xl">{icon}</span>
+        {useVisaLogo ? (
+          <img
+            src="https://upload.wikimedia.org/wikipedia/commons/archive/5/5a/20210725073357%21Visa_2014.svg"
+            alt="Visa"
+            className={`h-3 ${iconClassName || (isDarkTheme ? 'brightness-0 invert' : '')}`}
+            onError={(e) => {
+              e.target.style.display = 'none';
+              // Fallback to emoji if image fails to load
+              if (icon) {
+                e.target.parentElement.innerHTML = `<span class="text-2xl ${isDarkTheme ? 'text-white opacity-80' : ''}">${icon}</span>`;
+              }
+            }}
+          />
+        ) : icon && (
+          <span className={`text-2xl ${iconClassName || (isDarkTheme ? 'text-white opacity-80' : '')}`}>
+            {icon}
+          </span>
+        )}
       </div>
       {showDetailButton && (
         <button 
           onClick={onDetailClick}
-          className="mt-4 bg-white hover:bg-gray-100 text-purple-700 font-medium py-1 px-3 rounded-lg border border-purple-200 text-sm self-end transition-colors duration-200"
+          className={`mt-3 text-xs font-medium self-start transition-colors duration-150 ${
+            isDarkTheme 
+              ? 'text-white hover:text-gray-200 opacity-90' 
+              : 'text-purple-600 hover:text-purple-800'
+          }`}
         >
-          Ver detalle
+          Ver detalle →
         </button>
       )}
     </div>
