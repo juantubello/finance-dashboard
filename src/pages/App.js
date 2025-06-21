@@ -4,6 +4,7 @@ import Layout from '../components/Layout';
 import Dashboard from '../components/Dashboard';
 import CardExpensesPage from '../components/CardExpensesPage';
 import SyncDataPage from '../components/SyncDataPage';
+import ExpensesPage from '../components/ExpensesPage';
 
 const App = () => {
   return (
@@ -12,6 +13,7 @@ const App = () => {
         <Route path="/" element={<Layout><Dashboard /></Layout>} />
         <Route path="/card-expenses" element={<Layout><CardExpensesPage /></Layout>} />
         <Route path="/sync-data" element={<Layout><SyncDataPage /></Layout>} />
+        <Route path="/expenses" element={<Layout><ExpensesPage /></Layout>} />
       </Routes>
     </Router>
   );

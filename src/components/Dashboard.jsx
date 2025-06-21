@@ -121,14 +121,16 @@ const Dashboard = ({ activeNavItem, filters, setFilters }) => {
     textClassName="text-white"
   />
   
-  <Card 
-    title="Gastos" 
-    value={dashboardData.totals?.expense || 0} 
-    className="bg-gradient-to-r from-red-900 to-red-800 text-white border-gray-700"
-    icon="💸"
-    iconClassName="text-white opacity-90"
-    textClassName="text-white"
-  />
+<Card 
+  title="Gastos" 
+  value={dashboardData.totals?.expense || 0} 
+  className="bg-gradient-to-r from-red-900 to-red-800 text-white border-gray-700"
+  icon="💸"
+  iconClassName="text-white opacity-90"
+  textClassName="text-white"
+  showDetailButton={true}
+  onDetailClick={() => navigate('/expenses')}
+/>
   
   <Card 
     title="Ingreso" 

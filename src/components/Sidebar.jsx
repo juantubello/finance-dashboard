@@ -3,6 +3,7 @@ import React from 'react';
 const navItems = [
   { name: 'Reporte mensual', icon: '📊' },
   { name: 'Card Expenses', icon: '💳' },
+  { name: 'Gastos', icon: '💸' },
   { name: 'Sincronizar datos', icon: '🔄' }
 ];
 
