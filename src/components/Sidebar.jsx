@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'; // 👈 importá Link
 
 const navItems = [
   { name: 'Reporte mensual', icon: '📊', path: '/' },
-  { name: 'Card Expenses', icon: '💳', path: '/card-expenses' },
+  { name: 'Resumen de tarjetas', icon: '💳', path: '/card-expenses' },
   { name: 'Gastos', icon: '💸', path: '/expenses' },
   { name: 'Sincronizar datos', icon: '🔄', path: '/sync-data' }
 ];

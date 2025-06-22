@@ -109,7 +109,7 @@ const CardExpensesPage = ({ activeNavItem, filters, setFilters }) => {
         <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
           Resumen de tarjetas
         </h1>
-        <div className="mt-2 h-1 w-20 bg-blue-500 rounded-full"></div>
+        <div className="mt-2 h-1 w-20 bg-gray-500 rounded-full"></div>
       </div>
 
       <div className="space-y-6 w-full">
