@@ -169,8 +169,8 @@ const ExpensesPage = ({ filters }) => {
         />
 
         <div className="flex justify-end mb-4">
-          <div className="bg-blue-50 text-blue-800 px-3 py-1 rounded-lg text-sm font-semibold">
-            Total visible: {formatCurrency(totalVisible)}
+          <div className="bg-red-50 text-red-800 px-3 py-1 rounded-lg text-sm font-semibold">
+            Total: {formatCurrency(totalVisible)}
           </div>
         </div>
 
