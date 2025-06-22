@@ -3,9 +3,16 @@ import SyncButton from './SyncButton';
 import SyncStatus from './SyncStatus';
 import { toast } from 'react-toastify';
 
-const BASE_URL = process.env === 'true'
-  ? process.env.REACT_APP_PROD_API_URL
-  : process.env.REACT_APP_DEV_API_URL;
+const option = process.env.REACT_APP_USE_URL
+let url = ""
+if ( option === '1') {
+  url = process.env.REACT_APP_PROD_API_URL
+} else if (option === '2') {
+  url = process.env.REACT_APP_DEV_API_URL
+} else if (option === '3'){
+  url = process.env.REACT_APP_DEV_API_LINUX_URL
+}
+const BASE_URL = url
 
 const SyncDataPage = () => {
   const [syncStatus, setSyncStatus] = useState('');

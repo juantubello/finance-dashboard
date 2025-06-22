@@ -1,8 +1,15 @@
 import React, { useState, useEffect, useMemo } from 'react';
 
-const BASE_URL = process.env.REACT_APP_USE_PROD_URL === 'true'
-  ? process.env.REACT_APP_PROD_API_URL
-  : process.env.REACT_APP_DEV_API_URL;
+const option = process.env.REACT_APP_USE_URL
+let url = ""
+if ( option === '1') {
+  url = process.env.REACT_APP_PROD_API_URL
+} else if (option === '2') {
+  url = process.env.REACT_APP_DEV_API_URL
+} else if (option === '3'){
+  url = process.env.REACT_APP_DEV_API_LINUX_URL
+}
+const BASE_URL = url
 
 const CardExpensesPage = ({ activeNavItem, filters }) => {
   const [cardData, setCardData] = useState({ visa: null, mastercard: null });
@@ -145,20 +152,19 @@ const CardExpensesPage = ({ activeNavItem, filters }) => {
                             <span className="text-sm text-gray-600 whitespace-nowrap">{filtered.length} resultado(s)</span>
                           </div>
 
-                        
+
 
                           {isMobile ? (
                             <div className="space-y-3 overflow-x-hidden overflow-y-auto max-h-[400px]">
                               {filtered.map((e, i) => (
                                 <div
                                   key={i}
-                                  className={`border border-gray-200 rounded-lg p-3 transition-colors ${
-                                    e.amount_pesos && parseFloat(e.amount_pesos.replace(/\./g, '').replace(',', '.')) > 0
+                                  className={`border border-gray-200 rounded-lg p-3 transition-colors ${e.amount_pesos && parseFloat(e.amount_pesos.replace(/\./g, '').replace(',', '.')) > 0
                                       ? 'bg-blue-50 hover:bg-blue-100'
                                       : e.amount_usd && parseFloat(e.amount_usd.replace(/\./g, '').replace(',', '.')) > 0
-                                      ? 'bg-green-50 hover:bg-green-100'
-                                      : 'bg-white hover:bg-gray-50'
-                                  }`}
+                                        ? 'bg-green-50 hover:bg-green-100'
+                                        : 'bg-white hover:bg-gray-50'
+                                    }`}
                                 >
                                   <div className="text-sm text-gray-500">{e.date}</div>
                                   <div className="mt-2 text-sm font-medium text-gray-700">{e.descriptions}</div>
@@ -184,13 +190,12 @@ const CardExpensesPage = ({ activeNavItem, filters }) => {
                                   {filtered.map((e, i) => (
                                     <tr
                                       key={i}
-                                      className={`hover:bg-gray-50 ${
-                                        e.amount_pesos && parseFloat(e.amount_pesos.replace(/\./g, '').replace(',', '.')) > 0
+                                      className={`hover:bg-gray-50 ${e.amount_pesos && parseFloat(e.amount_pesos.replace(/\./g, '').replace(',', '.')) > 0
                                           ? 'bg-blue-50'
                                           : e.amount_usd && parseFloat(e.amount_usd.replace(/\./g, '').replace(',', '.')) > 0
-                                          ? 'bg-green-50'
-                                          : ''
-                                      }`}
+                                            ? 'bg-green-50'
+                                            : ''
+                                        }`}
                                     >
                                       <td className="px-4 py-2 text-sm text-gray-700 whitespace-nowrap">{e.date}</td>
                                       <td className="px-4 py-2 text-sm text-gray-700 max-w-xs truncate">{e.descriptions}</td>

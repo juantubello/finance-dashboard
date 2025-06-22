@@ -1,9 +1,16 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useTable, useSortBy, useGlobalFilter } from 'react-table';
 
-const BASE_URL = process.env.REACT_APP_USE_PROD_URL === 'true'
-  ? process.env.REACT_APP_PROD_API_URL
-  : process.env.REACT_APP_DEV_API_URL;
+const option = process.env.REACT_APP_USE_URL
+let url = ""
+if ( option === '1') {
+  url = process.env.REACT_APP_PROD_API_URL
+} else if (option === '2') {
+  url = process.env.REACT_APP_DEV_API_URL
+} else if (option === '3'){
+  url = process.env.REACT_APP_DEV_API_LINUX_URL
+}
+const BASE_URL = url
 
 const formatCurrency = (value) => {
   if (!value) return '-';
