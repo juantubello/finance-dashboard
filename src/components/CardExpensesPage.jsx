@@ -118,8 +118,8 @@ const CardExpensesPage = ({ activeNavItem, filters }) => {
                         className="bg-gray-100 px-4 py-3 flex justify-between items-center cursor-pointer hover:bg-gray-200"
                         onClick={() => toggleHolderExpansion(cardType, cardIndex, holderIndex)}
                       >
-                        <span className="font-semibold text-gray-800 text-sm md:text-base truncate">{holder.holder}</span>
-                        <div className="flex gap-2 items-center flex-wrap justify-end text-xs md:text-sm">
+                        <span className="font-semibold text-gray-800 text-sm md:text-base truncate w-1/2">{holder.holder}</span>
+                        <div className="flex gap-2 items-center justify-end text-xs md:text-sm w-1/2">
                           <span className="text-blue-800 font-medium whitespace-nowrap">ARS: {formatCurrency(totalARS)}</span>
                           <span className="text-green-800 font-medium whitespace-nowrap">USD: {formatCurrency(totalUSD)}</span>
                           <span className={`transform transition-transform ${isExpanded ? 'rotate-180' : ''}`}>▼</span>
@@ -127,23 +127,24 @@ const CardExpensesPage = ({ activeNavItem, filters }) => {
                       </div>
 
                       {isExpanded && (
-                        <div className="p-4 space-y-4">
-                          <input
-                            type="text"
-                            inputMode="text"
-                            className="w-full border px-3 py-2 rounded-md text-sm text-gray-700 appearance-none focus:outline-none focus:ring focus:border-blue-300"
-                            placeholder="Filtrar por descripción..."
-                            value={search}
-                            onChange={(e) => setFiltersByHolder(prev => ({ ...prev, [key]: e.target.value }))}
-                            style={{ fontSize: '16px' }}
-                          />
-
-                          <div className="text-right text-sm font-semibold text-gray-700">
-                            ARS: {formatCurrency(totalARS)} | USD: {formatCurrency(totalUSD)}
+                        <div className="p-4 space-y-4 max-h-[540px] overflow-y-auto">
+                          <div className="flex items-center justify-between gap-4">
+                            <input
+                              type="text"
+                              inputMode="text"
+                              className="w-full border px-3 py-2 rounded-md text-sm text-gray-700 appearance-none focus:outline-none focus:ring focus:border-blue-300"
+                              placeholder="Filtrar por descripción..."
+                              value={search}
+                              onChange={(e) => setFiltersByHolder(prev => ({ ...prev, [key]: e.target.value }))}
+                              style={{ fontSize: '16px' }}
+                            />
+                            <span className="text-sm text-gray-600 whitespace-nowrap">{filtered.length} resultado(s)</span>
                           </div>
 
+                        
+
                           {isMobile ? (
-                            <div className="space-y-3">
+                            <div className="space-y-3 overflow-x-hidden overflow-y-auto max-h-[400px]">
                               {filtered.map((e, i) => (
                                 <div
                                   key={i}
