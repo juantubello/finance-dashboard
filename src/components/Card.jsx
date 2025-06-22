@@ -30,8 +30,15 @@ const Card = ({
 }) => {
   const isDarkTheme = className.includes('from-gray-900') || className.includes('bg-gray-800');
 
+  const handleCardClick = (e) => {
+    if (onDetailClick) onDetailClick(e);
+  };
+
   return (
-    <div className={`${colorClasses[color]} ${className} p-4 rounded-lg border flex flex-col h-full`}>      
+    <div
+      onClick={handleCardClick}
+      className={`${colorClasses[color]} ${className} p-4 rounded-lg border flex flex-col h-full transition cursor-pointer hover:shadow-md`}
+    >
       <div className="flex justify-between items-center">
         <div className={textClassName || (isDarkTheme ? 'text-white' : '')}>
           <p className={`text-xs font-medium uppercase tracking-wider ${isDarkTheme ? 'opacity-80' : ''}`}>
@@ -61,7 +68,10 @@ const Card = ({
       </div>
       {showDetailButton && (
         <button 
-          onClick={onDetailClick}
+          onClick={(e) => {
+            e.stopPropagation(); // Prevent parent click
+            onDetailClick && onDetailClick(e);
+          }}
           className={`mt-3 text-xs font-medium self-start transition-colors duration-150 text-white hover:text-gray-200`}
         >
           Ver detalle →
