@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useTable, useSortBy, useGlobalFilter } from 'react-table';
 
+const BASE_URL = process.env.REACT_APP_USE_PROD_URL === 'true'
+  ? process.env.REACT_APP_PROD_API_URL
+  : process.env.REACT_APP_DEV_API_URL;
+
 const formatCurrency = (value) => {
   if (!value) return '-';
   try {
@@ -76,7 +80,7 @@ const ExpensesPage = ({ filters }) => {
       setLoading(true);
       try {
         const { selectedYear, selectedMonth } = filters;
-        const res = await fetch(`http://192.168.1.11:8000/expenses/${selectedYear}/${selectedMonth}`);
+        const res = await fetch(`${BASE_URL}/expenses/${selectedYear}/${selectedMonth}`);
         const json = await res.json();
         setData(json.expenses.expenses || []);
       } catch (e) {

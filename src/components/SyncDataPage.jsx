@@ -3,6 +3,10 @@ import SyncButton from './SyncButton';
 import SyncStatus from './SyncStatus';
 import { toast } from 'react-toastify';
 
+const BASE_URL = process.env === 'true'
+  ? process.env.REACT_APP_PROD_API_URL
+  : process.env.REACT_APP_DEV_API_URL;
+
 const SyncDataPage = () => {
   const [syncStatus, setSyncStatus] = useState('');
   const [isSyncing, setIsSyncing] = useState(false);
@@ -12,7 +16,7 @@ const SyncDataPage = () => {
     setActiveSync('expensesCurrentMonth');
     setIsSyncing(true);
     try {
-      const response = await fetch('http://192.168.1.11:8000/syncCurrentMonthExpenses');
+      const response = await fetch(`${BASE_URL}/syncCurrentMonthExpenses`);
       if (!response.ok) throw new Error('Network response was not ok');
       const data = await response.json();
       setSyncStatus(data.message || 'Gastos del mes sincronizados correctamente');
@@ -30,7 +34,7 @@ const SyncDataPage = () => {
     setActiveSync('expensesHistorical');
     setIsSyncing(true);
     try {
-      const response = await fetch('http://192.168.1.11:8000/syncExpenses/historical');
+      const response = await fetch(`${BASE_URL}/syncExpenses/historical`);
       if (!response.ok) throw new Error('Network response was not ok');
       const data = await response.json();
       setSyncStatus(data.message || 'Gastos históricos sincronizados correctamente');
@@ -48,7 +52,7 @@ const SyncDataPage = () => {
     setActiveSync('incomesCurrentMonth');
     setIsSyncing(true);
     try {
-      const response = await fetch('http://192.168.1.11:8000/syncCurrentMonthIncome');
+      const response = await fetch(`${BASE_URL}/syncCurrentMonthIncome`);
       if (!response.ok) throw new Error('Network response was not ok');
       const data = await response.json();
       setSyncStatus(data.message || 'Ingresos del mes sincronizados correctamente');
@@ -66,7 +70,7 @@ const SyncDataPage = () => {
     setActiveSync('incomesHistorical');
     setIsSyncing(true);
     try {
-      const response = await fetch('http://192.168.1.11:8000/syncIncomes/historical');
+      const response = await fetch(`${BASE_URL}/syncIncomes/historical`);
       if (!response.ok) throw new Error('Network response was not ok');
       const data = await response.json();
       setSyncStatus(data.message || 'Ingresos históricos sincronizados correctamente');

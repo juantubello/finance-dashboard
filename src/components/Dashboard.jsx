@@ -3,6 +3,10 @@ import DashboardContent from './DashboardContent';
 import Card from './Card';
 import { useNavigate } from 'react-router-dom';
 
+const BASE_URL = process.env.REACT_APP_USE_PROD_URL === 'true'
+  ? process.env.REACT_APP_PROD_API_URL
+  : process.env.REACT_APP_DEV_API_URL;
+
 const Dashboard = ({ activeNavItem, filters, setFilters }) => {
   const [dashboardData, setDashboardData] = useState({
     totals: {
@@ -35,7 +39,7 @@ const Dashboard = ({ activeNavItem, filters, setFilters }) => {
       setDashboardData(prev => ({ ...prev, loading: true, error: null }));
 
       const { selectedYear, selectedMonth } = filters;
-      const expensesResponse = await fetch(`http://192.168.1.11:8000/expenses/${selectedYear}/${selectedMonth}`);
+      const expensesResponse = await fetch(`${BASE_URL}/expenses/${selectedYear}/${selectedMonth}`);
       if (!expensesResponse.ok) throw new Error('Network response was not ok');
 
       const expensesData = await expensesResponse.json();
@@ -46,13 +50,13 @@ const Dashboard = ({ activeNavItem, filters, setFilters }) => {
         value: parseFloat(value?.replace(/\./g, '').replace(',', '.') || 0)
       }));
 
-      const incomeResponse = await fetch(`http://192.168.1.11:8000/incomes/${selectedYear}/${selectedMonth}`);
+      const incomeResponse = await fetch(`${BASE_URL}/incomes/${selectedYear}/${selectedMonth}`);
       if (!incomeResponse.ok) throw new Error('Network response was not ok');
       const incomeData = await incomeResponse.json();
       const totalIncome = parseFloat(incomeData.income?.total_ars?.replace(/\./g, '').replace(',', '.') || 0);
 
       const currentDate = new Date();
-      const cardResponse = await fetch(`http://192.168.1.11:8000/getResumeExpenses/${currentDate.getFullYear()}/${currentDate.getMonth() + 1}/all`);
+      const cardResponse = await fetch(`${BASE_URL}/getResumeExpenses/${currentDate.getFullYear()}/${currentDate.getMonth() + 1}/all`);
       const cardData = await cardResponse.json();
 
       let totalCardExpense = 0;

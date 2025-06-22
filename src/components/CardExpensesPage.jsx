@@ -1,5 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 
+const BASE_URL = process.env.REACT_APP_USE_PROD_URL === 'true'
+  ? process.env.REACT_APP_PROD_API_URL
+  : process.env.REACT_APP_DEV_API_URL;
+
 const CardExpensesPage = ({ activeNavItem, filters }) => {
   const [cardData, setCardData] = useState({ visa: null, mastercard: null });
   const [loading, setLoading] = useState(true);
@@ -36,7 +40,7 @@ const CardExpensesPage = ({ activeNavItem, filters }) => {
     const fetchCardData = async (cardType) => {
       try {
         const { selectedYear, selectedMonth } = filters;
-        const res = await fetch(`http://192.168.1.11:8000/getResumeExpenses/${selectedYear}/${selectedMonth}/${cardType}`);
+        const res = await fetch(`${BASE_URL}/getResumeExpenses/${selectedYear}/${selectedMonth}/${cardType}`);
         return await res.json();
       } catch (err) {
         console.error(`Error fetching ${cardType}:`, err);
