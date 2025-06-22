@@ -109,6 +109,14 @@ const Dashboard = ({ activeNavItem, filters, setFilters }) => {
       {activeNavItem === 'Reporte mensual' && (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+               <Card 
+    title="Ingreso" 
+    value={dashboardData.totals?.income || 0} 
+    className="bg-gradient-to-r from-[#45853d] to-[#51824b] text-white border-3 border-[#1b5413]"
+    icon="⬇️"
+    iconClassName="text-white opacity-90"
+    textClassName="text-white"
+  />
              <Card 
     title="Balance" 
     value={dashboardData.totals?.remaining || 0} 
@@ -119,16 +127,7 @@ const Dashboard = ({ activeNavItem, filters, setFilters }) => {
     icon="💵"
     iconClassName="text-white opacity-90"
     textClassName="text-white"
-  />
-   <Card 
-    title="Ingreso" 
-    value={dashboardData.totals?.income || 0} 
-    className="bg-gradient-to-r from-[#45853d] to-[#51824b] text-white border-3 border-[#1b5413]"
-    icon="✅"
-    iconClassName="text-white opacity-90"
-    textClassName="text-white"
-  />
-  
+  />  
 <Card 
   title="Gastos" 
   value={dashboardData.totals?.expense || 0} 

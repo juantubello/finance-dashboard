@@ -1,14 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useMemo } from 'react';
 
-const CardExpensesPage = ({ activeNavItem, filters, setFilters }) => {
-  const [cardData, setCardData] = useState({
-    visa: null,
-    mastercard: null
-  });
+const CardExpensesPage = ({ activeNavItem, filters }) => {
+  const [cardData, setCardData] = useState({ visa: null, mastercard: null });
   const [loading, setLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [expandedHolders, setExpandedHolders] = useState({});
+  const [filtersByHolder, setFiltersByHolder] = useState({});
 
   const getCardLogo = (type) => {
     const logos = {
@@ -19,19 +16,17 @@ const CardExpensesPage = ({ activeNavItem, filters, setFilters }) => {
   };
 
   const formatCurrency = (value) => {
-    if (!value) return '-';
+    const parsed = typeof value === 'number' ? value : parseFloat(value?.toString().replace(/\./g, '').replace(',', '.'));
+    if (isNaN(parsed)) return '-';
     return new Intl.NumberFormat('es-AR', {
       style: 'currency',
       currency: 'ARS',
       minimumFractionDigits: 2,
-    }).format(parseFloat(value.replace(/\./g, '').replace(',', '.')));
+    }).format(parsed);
   };
 
   useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
@@ -41,48 +36,35 @@ const CardExpensesPage = ({ activeNavItem, filters, setFilters }) => {
     const fetchCardData = async (cardType) => {
       try {
         const { selectedYear, selectedMonth } = filters;
-        const response = await fetch(
-          `http://192.168.1.11:8000/getResumeExpenses/${selectedYear}/${selectedMonth}/${cardType}`
-        );
-        const data = await response.json();
-        return data;
-      } catch (error) {
-        console.error(`Error fetching ${cardType} expenses:`, error);
+        const res = await fetch(`http://192.168.1.11:8000/getResumeExpenses/${selectedYear}/${selectedMonth}/${cardType}`);
+        return await res.json();
+      } catch (err) {
+        console.error(`Error fetching ${cardType}:`, err);
         return null;
       }
     };
 
     const fetchAllData = async () => {
-      try {
-        setLoading(true);
-        const [visaData, mastercardData] = await Promise.all([
-          fetchCardData('visa'),
-          fetchCardData('mastercard')
-        ]);
+      setLoading(true);
+      const [visaData, mcData] = await Promise.all([
+        fetchCardData('visa'),
+        fetchCardData('mastercard')
+      ]);
+      setCardData({ visa: visaData, mastercard: mcData });
 
-        setCardData({
-          visa: visaData,
-          mastercard: mastercardData
-        });
-
-        const initialExpandedState = {};
-        ['visa', 'mastercard'].forEach((cardType) => {
-          const data = cardType === 'visa' ? visaData : mastercardData;
-          data?.cards?.forEach((card, cardIndex) => {
-            card.holders.forEach((holder, holderIndex) => {
-              initialExpandedState[`${cardType}-${cardIndex}-${holderIndex}`] = false;
-            });
+      const initialExpanded = {};
+      ['visa', 'mastercard'].forEach(type => {
+        const data = type === 'visa' ? visaData : mcData;
+        data?.cards?.forEach((card, ci) => {
+          card.holders.forEach((_, hi) => {
+            initialExpanded[`${type}-${ci}-${hi}`] = false;
           });
         });
-        setExpandedHolders(initialExpandedState);
-      } catch (error) {
-        console.error('Error fetching card expenses:', error);
-      } finally {
-        setLoading(false);
-      }
+      });
+      setExpandedHolders(initialExpanded);
     };
 
-    fetchAllData();
+    fetchAllData().finally(() => setLoading(false));
   }, [filters]);
 
   const toggleHolderExpansion = (cardType, cardIndex, holderIndex) => {
@@ -93,181 +75,138 @@ const CardExpensesPage = ({ activeNavItem, filters, setFilters }) => {
   };
 
   if (loading) {
-    return (
-      <div className="p-6 pt-16 w-full mx-auto">
-        <div className="bg-white rounded-xl shadow-sm p-6">
-          <div className="text-center py-8">Cargando...</div>
-        </div>
-      </div>
-    );
+    return <div className="p-6 pt-16 w-full mx-auto text-center">Cargando...</div>;
   }
 
   return (
-    <div className="p-4 pt-16 w-full mx-auto max-w-screen-2xl">
-      {/* Added Resumen de tarjetas title */}
-      <div className="mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
-          Resumen de tarjetas
-        </h1>
-        <div className="mt-2 h-1 w-20 bg-gray-500 rounded-full"></div>
-      </div>
+    <div className="p-4 pt-16 max-w-screen-2xl mx-auto">
+      <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6">Resumen de tarjetas</h1>
 
-      <div className="space-y-6 w-full">
-        {['visa', 'mastercard'].map((cardType) => (
-          <div key={cardType} className="bg-white rounded-xl shadow-lg overflow-hidden w-full">
-            {/* Card Header with Black Card Styling */}
-            <div className={`p-4 border-b ${cardType === 'visa' ? 'bg-gradient-to-r from-gray-900 to-gray-800' : 'bg-gradient-to-r from-gray-800 to-gray-700'}`}>
-              <div className="flex items-center">
-                <img
-                  src={getCardLogo(cardType)}
-                  alt={cardType}
-                  className={`mr-3 object-contain ${cardType === 'visa' ? 'h-8 md:h-10 brightness-0 invert' : 'h-14 md:h-14 brightness-0 invert sepia'}`}
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                  }}
-                />
-                <h1 className={`text-lg md:text-2xl font-bold ${cardType === 'visa' ? 'text-blue-100' : 'text-orange-100'}`}>
-                  {cardType === 'visa' ? 'Visa' : 'Mastercard'} - {new Date(filters.selectedYear, filters.selectedMonth - 1).toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })}
-                </h1>
-              </div>
+      {['visa', 'mastercard'].map(cardType => (
+        <div key={cardType} className="mb-6 bg-white rounded-xl shadow-lg overflow-hidden">
+          <div className={`p-4 border-b ${cardType === 'visa' ? 'bg-gradient-to-r from-gray-900 to-gray-800' : 'bg-gradient-to-r from-gray-800 to-gray-700'}`}>
+            <div className="flex items-center">
+              <img
+                src={getCardLogo(cardType)}
+                alt={cardType}
+                className="mr-3 h-8 md:h-10 object-contain brightness-0 invert"
+              />
+              <h2 className="text-lg md:text-2xl font-bold text-white">
+                {cardType.toUpperCase()} - {new Date(filters.selectedYear, filters.selectedMonth - 1).toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })}
+              </h2>
             </div>
+          </div>
 
-            <div className="space-y-4 p-4 w-full">
-              {cardData[cardType]?.cards?.map((card, cardIndex) => (
-                <div key={cardIndex} className="space-y-4 w-full">
-                  {card.holders.map((holder, holderIndex) => {
-                    const isExpanded = expandedHolders[`${cardType}-${cardIndex}-${holderIndex}`];
-                    return (
-                      <div key={holderIndex} className="border border-gray-200 rounded-lg overflow-hidden w-full">
-                        {/* Holder Header - Light grey */}
-                        <div 
-                          className="bg-gray-100 p-3 md:p-4 flex justify-between items-center cursor-pointer hover:bg-gray-200 transition-colors w-full"
-                          onClick={() => toggleHolderExpansion(cardType, cardIndex, holderIndex)}
-                        >
-                          <h3 className="font-semibold text-gray-800 text-sm md:text-base">
-                            {holder.holder}
-                          </h3>
-                          <div className="flex items-center gap-2">
-                            <div className="bg-blue-50 text-blue-800 px-2 py-1 rounded-lg text-xs md:text-sm whitespace-nowrap min-w-[90px] text-right">
-                              ARS: {formatCurrency(holder.total_ars)}
-                            </div>
-                            <div className="bg-green-50 text-green-800 px-2 py-1 rounded-lg text-xs md:text-sm whitespace-nowrap min-w-[90px] text-right">
-                              USD: {formatCurrency(holder.total_usd)}
-                            </div>
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              className={`h-4 w-4 md:h-5 md:w-5 text-gray-500 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
-                              viewBox="0 0 20 20"
-                              fill="currentColor"
-                            >
-                              <path
-                                fillRule="evenodd"
-                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                clipRule="evenodd"
-                              />
-                            </svg>
-                          </div>
+          <div className="p-4 space-y-6">
+            {cardData[cardType]?.cards?.map((card, cardIndex) => (
+              <div key={cardIndex} className="space-y-4">
+                {card.holders.map((holder, holderIndex) => {
+                  const key = `${cardType}-${cardIndex}-${holderIndex}`;
+                  const isExpanded = expandedHolders[key];
+                  const search = filtersByHolder[key] || '';
+
+                  const filtered = holder.expenses.filter(e =>
+                    e.descriptions?.toLowerCase().includes(search.toLowerCase())
+                  );
+
+                  const totalARS = filtered.reduce((acc, e) => acc + (parseFloat(e.amount_pesos?.replace(/\./g, '').replace(',', '.')) || 0), 0);
+                  const totalUSD = filtered.reduce((acc, e) => acc + (parseFloat(e.amount_usd?.replace(/\./g, '').replace(',', '.')) || 0), 0);
+
+                  return (
+                    <div key={holderIndex} className="border border-gray-200 rounded-lg">
+                      <div
+                        className="bg-gray-100 px-4 py-3 flex justify-between items-center cursor-pointer hover:bg-gray-200"
+                        onClick={() => toggleHolderExpansion(cardType, cardIndex, holderIndex)}
+                      >
+                        <span className="font-semibold text-gray-800 text-sm md:text-base truncate">{holder.holder}</span>
+                        <div className="flex gap-2 items-center flex-wrap justify-end text-xs md:text-sm">
+                          <span className="text-blue-800 font-medium whitespace-nowrap">ARS: {formatCurrency(totalARS)}</span>
+                          <span className="text-green-800 font-medium whitespace-nowrap">USD: {formatCurrency(totalUSD)}</span>
+                          <span className={`transform transition-transform ${isExpanded ? 'rotate-180' : ''}`}>▼</span>
                         </div>
+                      </div>
 
-                        {isExpanded && (
-                          <div className="overflow-auto w-full" style={{ maxHeight: '500px' }}>
-                            {isMobile ? (
-                              <div className="p-2 md:p-3 space-y-2 md:space-y-3">
-                                {holder.expenses.map((expense, expenseIndex) => (
-                                  <div
-                                    key={expenseIndex}
-                                    className={`border border-gray-200 rounded-lg p-2 md:p-3 transition-colors ${
-                                      expense.amount_pesos && expense.amount_pesos !== '0' && expense.amount_pesos !== '0,00' 
-                                        ? 'bg-blue-50 hover:bg-blue-100' 
-                                        : expense.amount_usd && expense.amount_usd !== '0' && expense.amount_usd !== '0,00'
-                                          ? 'bg-green-50 hover:bg-green-100'
-                                          : 'bg-white hover:bg-gray-50'
-                                    }`}
-                                  >
-                                    <div className="flex justify-between text-sm">
-                                      <span className="font-medium text-gray-700">Fecha:</span>
-                                      <span className="text-gray-700">{expense.date}</span>
-                                    </div>
-                                    <div className="mt-2">
-                                      <span className="text-sm font-medium text-gray-700">Descripción:</span>
-                                      <p className="text-sm text-gray-700 mt-1">{expense.descriptions}</p>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-2 mt-2">
-                                      <div>
-                                        <span className="text-sm text-gray-500">ARS:</span>
-                                        <p className="text-sm font-medium text-gray-700">
-                                          {expense.amount_pesos ? formatCurrency(expense.amount_pesos) : '-'}
-                                        </p>
-                                      </div>
-                                      <div>
-                                        <span className="text-sm text-gray-500">USD:</span>
-                                        <p className="text-sm font-medium text-gray-700">
-                                          {expense.amount_usd ? formatCurrency(expense.amount_usd) : '-'}
-                                        </p>
-                                      </div>
-                                    </div>
+                      {isExpanded && (
+                        <div className="p-4 space-y-4">
+                          <input
+                            type="text"
+                            inputMode="text"
+                            className="w-full border px-3 py-2 rounded-md text-sm text-gray-700 appearance-none focus:outline-none focus:ring focus:border-blue-300"
+                            placeholder="Filtrar por descripción..."
+                            value={search}
+                            onChange={(e) => setFiltersByHolder(prev => ({ ...prev, [key]: e.target.value }))}
+                            style={{ fontSize: '16px' }}
+                          />
+
+                          <div className="text-right text-sm font-semibold text-gray-700">
+                            ARS: {formatCurrency(totalARS)} | USD: {formatCurrency(totalUSD)}
+                          </div>
+
+                          {isMobile ? (
+                            <div className="space-y-3">
+                              {filtered.map((e, i) => (
+                                <div
+                                  key={i}
+                                  className={`border border-gray-200 rounded-lg p-3 transition-colors ${
+                                    e.amount_pesos && parseFloat(e.amount_pesos.replace(/\./g, '').replace(',', '.')) > 0
+                                      ? 'bg-blue-50 hover:bg-blue-100'
+                                      : e.amount_usd && parseFloat(e.amount_usd.replace(/\./g, '').replace(',', '.')) > 0
+                                      ? 'bg-green-50 hover:bg-green-100'
+                                      : 'bg-white hover:bg-gray-50'
+                                  }`}
+                                >
+                                  <div className="text-sm text-gray-500">{e.date}</div>
+                                  <div className="mt-2 text-sm font-medium text-gray-700">{e.descriptions}</div>
+                                  <div className="mt-2 flex justify-between text-sm">
+                                    <span className="text-gray-600">ARS: {formatCurrency(e.amount_pesos)}</span>
+                                    <span className="text-gray-600">USD: {formatCurrency(e.amount_usd)}</span>
                                   </div>
-                                ))}
-                              </div>
-                            ) : (
-                              <table className="min-w-full divide-y divide-gray-200 w-full">
-                                <thead className="bg-gray-50 sticky top-0 z-10">
-                                  <tr>
-                                    <th className="px-6 py-3 text-left text-xs md:text-sm font-medium text-gray-500 uppercase tracking-wider">
-                                      Fecha
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs md:text-sm font-medium text-gray-500 uppercase tracking-wider">
-                                      Descripción
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs md:text-sm font-medium text-gray-500 uppercase tracking-wider">
-                                      ARS
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs md:text-sm font-medium text-gray-500 uppercase tracking-wider">
-                                      USD
-                                    </th>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="overflow-auto max-h-[400px]">
+                              <table className="min-w-full divide-y divide-gray-200">
+                                <thead className="sticky top-0 bg-gray-50 z-10">
+                                  <tr className="text-gray-600 text-xs">
+                                    <th className="px-4 py-2 text-left">Fecha</th>
+                                    <th className="px-4 py-2 text-left">Descripción</th>
+                                    <th className="px-4 py-2 text-left">ARS</th>
+                                    <th className="px-4 py-2 text-left">USD</th>
                                   </tr>
                                 </thead>
-                                <tbody className="divide-y divide-gray-200">
-                                  {holder.expenses.map((expense, expenseIndex) => (
+                                <tbody>
+                                  {filtered.map((e, i) => (
                                     <tr
-                                      key={expenseIndex}
-                                      className={`
-                                        ${expense.amount_pesos && expense.amount_pesos !== '0' && expense.amount_pesos !== '0,00' 
-                                          ? 'bg-blue-50 hover:bg-blue-100' 
-                                          : expense.amount_usd && expense.amount_usd !== '0' && expense.amount_usd !== '0,00'
-                                            ? 'bg-green-50 hover:bg-green-100'
-                                            : 'bg-white hover:bg-gray-50'
-                                        }
-                                      `}
+                                      key={i}
+                                      className={`hover:bg-gray-50 ${
+                                        e.amount_pesos && parseFloat(e.amount_pesos.replace(/\./g, '').replace(',', '.')) > 0
+                                          ? 'bg-blue-50'
+                                          : e.amount_usd && parseFloat(e.amount_usd.replace(/\./g, '').replace(',', '.')) > 0
+                                          ? 'bg-green-50'
+                                          : ''
+                                      }`}
                                     >
-                                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                                        {expense.date}
-                                      </td>
-                                      <td className="px-6 py-4 text-sm text-gray-700 max-w-xs">
-                                        <div className="truncate">{expense.descriptions}</div>
-                                      </td>
-                                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                                        {expense.amount_pesos ? formatCurrency(expense.amount_pesos) : '-'}
-                                      </td>
-                                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                                        {expense.amount_usd ? formatCurrency(expense.amount_usd) : '-'}
-                                      </td>
+                                      <td className="px-4 py-2 text-sm text-gray-700 whitespace-nowrap">{e.date}</td>
+                                      <td className="px-4 py-2 text-sm text-gray-700 max-w-xs truncate">{e.descriptions}</td>
+                                      <td className="px-4 py-2 text-sm text-gray-700 whitespace-nowrap">{formatCurrency(e.amount_pesos)}</td>
+                                      <td className="px-4 py-2 text-sm text-gray-700 whitespace-nowrap">{formatCurrency(e.amount_usd)}</td>
                                     </tr>
                                   ))}
                                 </tbody>
                               </table>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              ))}
-            </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </div>
+      ))}
     </div>
   );
 };
