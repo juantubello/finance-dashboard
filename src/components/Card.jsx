@@ -16,17 +16,28 @@ const formatCurrency = (value) => {
   }).format(value);
 };
 
-const Card = ({ 
-  title, 
-  value, 
-  icon, 
-  color, 
-  showDetailButton, 
-  onDetailClick, 
-  className = '', 
-  iconClassName = '', 
+const formatCurrencyUsd = (value) => {
+  console.log(value)
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2
+  }).format(value);
+};
+
+const Card = ({
+  title,
+  value,
+  icon,
+  color,
+  showDetailButton,
+  onDetailClick,
+  className = '',
+  iconClassName = '',
   textClassName = '',
-  useVisaLogo = false
+  useVisaLogo = false,
+  valueUsdCard
+
 }) => {
   const isDarkTheme = className.includes('from-gray-900') || className.includes('bg-gray-800');
 
@@ -44,9 +55,15 @@ const Card = ({
           <p className={`text-xs font-medium uppercase tracking-wider ${isDarkTheme ? 'opacity-80' : ''}`}>
             {title}
           </p>
-          <p className={`text-xl font-semibold mt-1 ${isDarkTheme ? '' : ''}`}>
-            {formatCurrency(value)}
-          </p>
+          {useVisaLogo ? (
+            <p className={`text-xl font-semibold mt-1 ${isDarkTheme ? '' : ''}`}>
+              {formatCurrency(value)} | {formatCurrencyUsd(valueUsdCard)}
+            </p>
+          ) : (
+            <p className={`text-xl font-semibold mt-1 ${isDarkTheme ? '' : ''}`}>
+              {formatCurrency(value)}
+            </p>
+          )}
         </div>
         {useVisaLogo ? (
           <img
@@ -67,7 +84,7 @@ const Card = ({
         )}
       </div>
       {showDetailButton && (
-        <button 
+        <button
           onClick={(e) => {
             e.stopPropagation(); // Prevent parent click
             onDetailClick && onDetailClick(e);

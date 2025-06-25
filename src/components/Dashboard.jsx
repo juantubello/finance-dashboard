@@ -5,11 +5,11 @@ import { useNavigate } from 'react-router-dom';
 
 const option = process.env.REACT_APP_USE_URL
 let url = ""
-if ( option === '1') {
+if (option === '1') {
   url = process.env.REACT_APP_PROD_API_URL
 } else if (option === '2') {
   url = process.env.REACT_APP_DEV_API_URL
-} else if (option === '3'){
+} else if (option === '3') {
   url = process.env.REACT_APP_DEV_API_LINUX_URL
 }
 const BASE_URL = url
@@ -61,24 +61,26 @@ const Dashboard = ({ activeNavItem, filters, setFilters }) => {
       if (!incomeResponse.ok) throw new Error('Network response was not ok');
       const incomeData = await incomeResponse.json();
       const totalIncome = parseFloat(incomeData.income?.total_ars?.replace(/\./g, '').replace(',', '.') || 0);
-
-      const currentDate = new Date();
-      const cardResponse = await fetch(`${BASE_URL}/getResumeExpenses/${currentDate.getFullYear()}/${currentDate.getMonth() + 1}/all`);
+      const cardResponse = await fetch(`${BASE_URL}/getResumeExpenses/${selectedYear}/${selectedMonth}`);
       const cardData = await cardResponse.json();
 
-      let totalCardExpense = 0;
-      cardData.cards?.forEach(card => {
-        card.holders?.forEach(holder => {
-          totalCardExpense += parseFloat(holder?.total_ars?.replace(/\./g, '').replace(',', '.') || 0);
-        });
-      });
+      let totalCardArs = 0;
+      let totalCardUsd = 0;
+      if (cardData.hasOwnProperty("total_ars_cards") && cardData.total_ars_cards !== 0) {
+        totalCardArs = parseFloat(cardData.total_ars_cards.replace(/\./g, '').replace(',', '.') || 0);
+      }
+
+      if (cardData.hasOwnProperty("total_usd_cards") && cardData.total_usd_cards !== 0) {
+        totalCardUsd = parseFloat(cardData.total_usd_cards.replace(/\./g, '').replace(',', '.') || 0);
+      }
 
       setDashboardData({
         totals: {
           expense: totalExpense,
           income: totalIncome,
           remaining: totalIncome - totalExpense,
-          card: totalCardExpense
+          totalCardArs: totalCardArs,
+          totalCardUsd: totalCardUsd
         },
         categories,
         loading: false,
@@ -120,44 +122,45 @@ const Dashboard = ({ activeNavItem, filters, setFilters }) => {
       {activeNavItem === 'Reporte mensual' && (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-               <Card 
-    title="Ingreso" 
-    value={dashboardData.totals?.income || 0} 
-    className="bg-gradient-to-r from-[#45853d] to-[#51824b] text-white border-3 border-[#1b5413]"
-    icon="⬇️"
-    iconClassName="text-white opacity-90"
-    textClassName="text-white"
-  />
-             <Card 
-    title="Balance" 
-    value={dashboardData.totals?.remaining || 0} 
-    className={`${dashboardData.totals?.remaining >= 0 
-      ? 'bg-gradient-to-r from-[#2836a6] to-[#3945a3] text-white border-3 border-[#2130a6]' 
-      : 'bg-gradient-to-r from-[#2836a6] to-[#3945a3] text-white border-3 border-[#2130a6]'
-    } text-white border-gray-700`}
-    icon="💵"
-    iconClassName="text-white opacity-90"
-    textClassName="text-white"
-  />  
-<Card 
-  title="Gastos" 
-  value={dashboardData.totals?.expense || 0} 
-  className="bg-gradient-to-r from-[#b34040] to-[#b54747] text-white border-3 border-[#ad3131]"
-  icon="🚨"
-  iconClassName="text-white opacity-90"
-  textClassName="text-white"
-  showDetailButton={true}
-  onDetailClick={() => navigate('/expenses')}
-/>
-  <Card 
-    title="Tarjetas" 
-    value={dashboardData.totals?.card || 0}
-    showDetailButton={true}
-    onDetailClick={() => navigate('/card-expenses')}
-    className="bg-gradient-to-r from-gray-900 to-gray-800 text-white border-gray-700"
-    useVisaLogo={true}
-    logoSize="h-5"
-  />
+            <Card
+              title="Ingreso"
+              value={dashboardData.totals?.income || 0}
+              className="bg-gradient-to-r from-[#45853d] to-[#51824b] text-white border-3 border-[#1b5413]"
+              icon="⬇️"
+              iconClassName="text-white opacity-90"
+              textClassName="text-white"
+            />
+            <Card
+              title="Balance"
+              value={dashboardData.totals?.remaining || 0}
+              className={`${dashboardData.totals?.remaining >= 0
+                ? 'bg-gradient-to-r from-[#2836a6] to-[#3945a3] text-white border-3 border-[#2130a6]'
+                : 'bg-gradient-to-r from-[#2836a6] to-[#3945a3] text-white border-3 border-[#2130a6]'
+                } text-white border-gray-700`}
+              icon="💵"
+              iconClassName="text-white opacity-90"
+              textClassName="text-white"
+            />
+            <Card
+              title="Gastos"
+              value={dashboardData.totals?.expense || 0}
+              className="bg-gradient-to-r from-[#b34040] to-[#b54747] text-white border-3 border-[#ad3131]"
+              icon="🚨"
+              iconClassName="text-white opacity-90"
+              textClassName="text-white"
+              showDetailButton={true}
+              onDetailClick={() => navigate('/expenses')}
+            />
+            <Card
+              title="Tarjetas"
+              value={dashboardData.totals?.totalCardArs || 0}
+              showDetailButton={true}
+              onDetailClick={() => navigate('/card-expenses')}
+              className="bg-gradient-to-r from-gray-900 to-gray-800 text-white border-gray-700"
+              useVisaLogo={true}
+              logoSize="h-5"
+              valueUsdCard={dashboardData.totals?.totalCardUsd || 0}
+            />
           </div>
 
           <div className="bg-white p-6 rounded-xl shadow-sm mb-8">
